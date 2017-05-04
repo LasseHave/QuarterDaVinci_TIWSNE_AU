@@ -1,3 +1,6 @@
 .cache/*
 .classpath
 .settings/
+.metadata/*
+QDC_Receiver/.cache*
+QDV_Sender/.cache*
