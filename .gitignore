@@ -1,6 +1,6 @@
-.cache/*
-.classpath
-.settings/
-.metadata/*
-QDC_Receiver/.cache*
-QDV_Sender/.cache*
+telosb_RadioImage/.cache/*
+telosb_RadioImage/.classpath
+telosb_RadioImage/.settings/
+telosb_RadioImage/.metadata/*
+telosb_RadioImage/QDC_Receiver/.cache*
+telosb_RadioImage/QDV_Sender/.cache*
