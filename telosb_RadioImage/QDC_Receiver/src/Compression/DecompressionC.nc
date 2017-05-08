@@ -6,8 +6,8 @@
 module DecompressionC {
   provides interface Decompression;
   uses {
-    interface CircularBufferWrite as OutBuffer;
-    interface CircularBufferRead as InBuffer;
+    interface ImageBufferWrite as WriteBuffer;
+    interface ImageBufferRead as ReadBuffer;
   }
 }
 implementation {
@@ -51,7 +51,7 @@ implementation {
     static uint8_t byte;
     // TODO: if returns FAIL we get an invalid byte!! Only the case on worst
     // case images.
-    call InBuffer.read(&byte);
+    call ReadBuffer.read(&byte);
     return byte;
   }
 
@@ -202,7 +202,7 @@ implementation {
     // block.
     // TODO: Worst case image can use an input that is larger than the
     // output. This would cause the readByte() to read a faulty byte.
-    if (call InBuffer.available() < COMPRESS_BLOCK_SIZE) return;
+    if (call ReadBuffer.available() < COMPRESS_BLOCK_SIZE) return;
 
     // iterate over all image pixels
     i = 0;
@@ -227,7 +227,7 @@ implementation {
             N2 = N1;
           } else {
             line[x] = P = readByte();
-            call OutBuffer.write(P);
+            call WriteBuffer.write(P);
             continue;
           }
         }
@@ -254,7 +254,7 @@ implementation {
             P = diff + H + 1;
         }
         line[x] = P;
-        call OutBuffer.write(P);
+        call WriteBuffer.write(P);
       } while (x++ != 255 && i < COMPRESS_BLOCK_SIZE);
     } while (x == 0 && y++ != 255 && i < COMPRESS_BLOCK_SIZE);
 
@@ -272,7 +272,7 @@ implementation {
     static uint8_t tmpIn[COMPRESS_BLOCK_SIZE / 8 * 7];
     static uint8_t tmpOut[COMPRESS_BLOCK_SIZE];
     static uint16_t iOut, iIn;
-    if (call InBuffer.readBlock(tmpIn, sizeof(tmpIn)) == SUCCESS) {
+    if (call ReadBuffer.readBlock(tmpIn, sizeof(tmpIn)) == SUCCESS) {
       for (iIn = iOut = 0; iOut < COMPRESS_BLOCK_SIZE;) {
         sliced = 0;
         for (j = 0; j < 7; j++, iIn++) {
@@ -281,7 +281,7 @@ implementation {
         }
         tmpOut[iOut++] = sliced;
       }
-      call OutBuffer.writeBlock(tmpOut, COMPRESS_BLOCK_SIZE);
+      call WriteBuffer.writeBlock(tmpOut, COMPRESS_BLOCK_SIZE);
       _bytesProcessed += COMPRESS_BLOCK_SIZE;
     }
   }
@@ -297,7 +297,7 @@ implementation {
     static uint8_t tmpIn[COMPRESS_BLOCK_SIZE / 4 * 3];
     static uint8_t tmpOut[COMPRESS_BLOCK_SIZE];
     static uint16_t iOut, iIn;
-    if (call InBuffer.readBlock(tmpIn, sizeof(tmpIn)) == SUCCESS) {
+    if (call ReadBuffer.readBlock(tmpIn, sizeof(tmpIn)) == SUCCESS) {
       for (iIn = iOut = 0; iOut < COMPRESS_BLOCK_SIZE;) {
         sliced = 0;
         for (j = 0; j < 3; j++, iIn++) {
@@ -306,7 +306,7 @@ implementation {
         }
         tmpOut[iOut++] = sliced;
       }
-      call OutBuffer.writeBlock(tmpOut, COMPRESS_BLOCK_SIZE);
+      call WriteBuffer.writeBlock(tmpOut, COMPRESS_BLOCK_SIZE);
       _bytesProcessed += COMPRESS_BLOCK_SIZE;
     }
   }
@@ -322,12 +322,12 @@ implementation {
     static uint8_t tmpOut[COMPRESS_BLOCK_SIZE];
     static uint16_t iOut, iIn;
 
-    if (call InBuffer.readBlock(tmpIn, sizeof(tmpIn)) == SUCCESS) {
+    if (call ReadBuffer.readBlock(tmpIn, sizeof(tmpIn)) == SUCCESS) {
       for (iIn = iOut = 0; iOut < COMPRESS_BLOCK_SIZE; iIn++) {
         tmpOut[iOut++] = tmpIn[iIn] & 0xF0;
         tmpOut[iOut++] = tmpIn[iIn] << 4;
       }
-      call OutBuffer.writeBlock(tmpOut, COMPRESS_BLOCK_SIZE);
+      call WriteBuffer.writeBlock(tmpOut, COMPRESS_BLOCK_SIZE);
       _bytesProcessed += COMPRESS_BLOCK_SIZE;
     }
   }
@@ -342,7 +342,7 @@ implementation {
       _running = FALSE;
       signal Decompression.decompressDone(SUCCESS);
       return;
-    } else if (call OutBuffer.free() >= COMPRESS_BLOCK_SIZE) {
+    } else if (call WriteBuffer.free() >= COMPRESS_BLOCK_SIZE) {
       // Decompress next block
       // (Check if enough data in input buffer is done in decompressBlock())
       decompressBlock();
@@ -361,7 +361,7 @@ implementation {
       _running = TRUE;
       _bytesProcessed = 0;
 
-      call OutBuffer.clear();
+      call WriteBuffer.clear();
 #ifdef FELICS
       x = y = 0;
       _bitBuf = 0;

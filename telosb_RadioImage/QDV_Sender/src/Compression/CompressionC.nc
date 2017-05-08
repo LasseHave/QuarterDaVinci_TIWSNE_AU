@@ -6,8 +6,8 @@
 module CompressionC {
   provides interface Compression;
   uses {
-    interface CircularBufferWrite as OutBuffer;
-    interface CircularBufferRead as InBuffer;
+    interface ImageBufferWrite as WriteBuffer;
+    interface ImageBufferRead as ReadBuffer;
   }
 }
 implementation {
@@ -21,25 +21,17 @@ implementation {
    */
   uint32_t _bytesProcessed;
 
-#ifdef FELICS
+#ifdef FELICS /* Fast and Efficient Lossless Image Compression */
   /**
-   * X-coordinate of currently processed pixel.
+   * Coordinates of pixels.
    */
   uint8_t x;
-
-  /**
-   * Y-coordinate of currently processed pixel.
-   */
   uint8_t y;
 
   /**
-   * Buffer for single encoded bits until byte is full.
+   * Buffer.
    */
   uint8_t _bitBuf;
-
-  /**
-   * Current bit position in single bit buffer.
-   */
   uint8_t _bitBufPos;
 
   /**
@@ -52,18 +44,14 @@ implementation {
    * @param byte  The byte to write to the output.
    */
   inline void writeByte(uint8_t byte) {
-    call OutBuffer.write(byte);
-    // TODO: Error if byte can't be written. This only happens on worst case
-    // images though
-    // TODO: Use local buffer to write to cyclic buffer in blocks -> increases
-    // speed?
+    call WriteBuffer.write(byte);
   }
 
   /**
    * Write single bit to the output.
    *
    * Bits are written to an intermediate buffer until a full byte can be flushed
-   * to the output. Call <code>writeBitFlush()</code> to flush the buffer to
+   * to the output. Call writeBitFlush() to flush the buffer to
    * the output.
    *
    * @param bit   The bit to write to the output.
@@ -81,7 +69,7 @@ implementation {
   }
 
   /**
-   * Flushes the single bit buffer written with <code>writeBit(uint8_t)</code>
+   * Flushes the single bit buffer written with writeBit(uint8_t)
    * to the output even if the byte is not full yet.
    */
   inline void writeBitFlush() {
@@ -219,8 +207,8 @@ implementation {
     // new block
     // TODO: Worst case image can produce an output that is larger than the
     // input. This would cause a loss of bytes..
-    if (call OutBuffer.free() < COMPRESS_BLOCK_SIZE) return;
-    if (call InBuffer.readBlock(tmpIn, COMPRESS_BLOCK_SIZE) != SUCCESS) return;
+    if (call WriteBuffer.free() < COMPRESS_BLOCK_SIZE) return;
+    if (call ReadBuffer.readBlock(tmpIn, COMPRESS_BLOCK_SIZE) != SUCCESS) return;
 
     // iterate over all image pixels
     i = 0;
@@ -305,7 +293,7 @@ implementation {
         tmpOut[iOut] |= (sliced >>= 1) & 0x01;
       }
     }
-    call OutBuffer.writeBlock(tmpOut, sizeof(tmpOut));
+    call WriteBuffer.writeBlock(tmpOut, sizeof(tmpOut));
     _bytesProcessed += COMPRESS_BLOCK_SIZE;
   }
 #elif defined(TRUNCATE_2)
@@ -320,8 +308,8 @@ implementation {
     static uint8_t tmpIn[COMPRESS_BLOCK_SIZE];
     static uint8_t tmpOut[COMPRESS_BLOCK_SIZE / 4 * 3];
     static uint16_t iOut, iIn;
-    if (call OutBuffer.free() < sizeof(tmpOut)) return;
-    if (call InBuffer.readBlock(tmpIn, COMPRESS_BLOCK_SIZE) != SUCCESS) return;
+    if (call WriteBuffer.free() < sizeof(tmpOut)) return;
+    if (call ReadBuffer.readBlock(tmpIn, COMPRESS_BLOCK_SIZE) != SUCCESS) return;
     for (iIn = iOut = 0; iIn < COMPRESS_BLOCK_SIZE; iIn++) {
       sliced = tmpIn[iIn + 3];
       for (j = 0; j < 3; j++, iIn++, iOut++) {
@@ -329,7 +317,7 @@ implementation {
         tmpOut[iOut] |= (sliced >>= 2) & 0x03;
       }
     }
-    call OutBuffer.writeBlock(tmpOut, sizeof(tmpOut));
+    call WriteBuffer.writeBlock(tmpOut, sizeof(tmpOut));
     _bytesProcessed += COMPRESS_BLOCK_SIZE;
   }
 #elif defined(TRUNCATE_4)
@@ -343,13 +331,13 @@ implementation {
     static uint8_t tmpIn[COMPRESS_BLOCK_SIZE];
     static uint8_t tmpOut[COMPRESS_BLOCK_SIZE / 2];
     static uint16_t iOut, iIn;
-    if (call OutBuffer.free() < sizeof(tmpOut)) return;
-    call InBuffer.readBlock(tmpIn, COMPRESS_BLOCK_SIZE);
+    if (call WriteBuffer.free() < sizeof(tmpOut)) return;
+    call ReadBuffer.readBlock(tmpIn, COMPRESS_BLOCK_SIZE);
     for (iIn = iOut = 0; iIn < COMPRESS_BLOCK_SIZE; iOut++) {
       tmpOut[iOut] = tmpIn[iIn++] & 0xF0;
       tmpOut[iOut] |= tmpIn[iIn++] >> 4;
     }
-    call OutBuffer.writeBlock(tmpOut, sizeof(tmpOut));
+    call WriteBuffer.writeBlock(tmpOut, sizeof(tmpOut));
     _bytesProcessed += COMPRESS_BLOCK_SIZE;
   }
 #endif
@@ -382,7 +370,7 @@ implementation {
       _running = TRUE;
       _bytesProcessed = 0;
 
-      call OutBuffer.clear();
+      call WriteBuffer.clear();
 #ifdef FELICS
       x = y = 0;
       _bitBuf = 0;
