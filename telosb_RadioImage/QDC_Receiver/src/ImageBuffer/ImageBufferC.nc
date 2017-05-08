@@ -9,41 +9,30 @@ generic module ImageBufferC(uint16_t bufferSize) {
 }
 implementation {
   /**
-   * Internal byte array.
+   * Initialization.
    */
   uint8_t _buf[SIZE];
-
-  /**
-   * Pointer to first available byte
-   * (unless equal to <code>end</code>).
-   */
   uint16_t _start = 0;
-
-  /**
-   * Pointer to first invalid byte.
-   */
   uint16_t _end = 0;
 
-  command void CircularBufferWrite.clear() {
+  command void ImageBufferWrite.clear() {
     _start = 0;
     _end = 0;
   }
 
   /**
    * Returns number of available bytes.
-   *
-   * @return Returns the number of available bytes.
    */
-  inline uint16_t available() {
+  inline uint16_t availableBytes() {
     if (_start <= _end)
       return _end - _start;
     else
       return SIZE - _start + _end;
   }
 
-  command uint16_t CircularBufferRead.available() { return available(); }
+  command uint16_t ImageBufferRead.available() { return availableBytes(); }
 
-  command error_t CircularBufferRead.read(uint8_t * byte) {
+  command error_t ImageBufferRead.read(uint8_t * byte) {
     if (_start == _end) {
       return FAIL;
     } else {
@@ -53,9 +42,9 @@ implementation {
     }
   }
 
-  command error_t CircularBufferRead.readBlock(uint8_t * block, uint16_t len) {
+  command error_t ImageBufferRead.readBlock(uint8_t * block, uint16_t len) {
     static uint16_t i;
-    if (available() < len) {
+    if (availableBytes() < len) {
       return FAIL;
     } else {
       for (i = 0; i < len; i++) {
@@ -68,16 +57,14 @@ implementation {
 
   /**
    * Returns free space in number of bytes.
-   *
-   * @return Returns the free space in number of bytes.
    */
-  inline uint16_t free() { 
-    return SIZE - available() - 1; 
+  inline uint16_t freeBytes() {
+    return SIZE - availableBytes() - 1;
   }
 
-  command uint16_t CircularBufferWrite.free() { return free(); }
+  command uint16_t ImageBufferWrite.free() { return freeBytes(); }
 
-  command error_t CircularBufferWrite.write(uint8_t byte) {
+  command error_t ImageBufferWrite.write(uint8_t byte) {
     if (_end + 1 == _start || (_end + 1 == SIZE && _start == 0)) {
       return FAIL;
     } else {
@@ -87,7 +74,7 @@ implementation {
     }
   }
 
-  command error_t CircularBufferWrite.writeBlock(uint8_t * block,
+  command error_t ImageBufferWrite.writeBlock(uint8_t * block,
                                                  uint16_t len) {
     static uint16_t i;
     if (free() < len) {
