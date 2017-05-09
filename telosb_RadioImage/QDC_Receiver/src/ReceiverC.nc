@@ -4,7 +4,6 @@
 module ReceiverC {
 	uses interface Boot;
 	uses interface Leds;
-	uses interface Timer<TMilli> as Timer0;
 	uses interface Packet;
 	uses interface AMPacket;
 	uses interface AMSend;
@@ -22,20 +21,6 @@ implementation {
 
 	}
 
-	event void Timer0.fired() {
-		counter++;
-
-		if( ! busy) {
-			ReceiverMsg * btrpkt = (ReceiverMsg * )(call Packet.getPayload(&pkt,
-					sizeof(ReceiverMsg)));
-			btrpkt->nodeid = TOS_NODE_ID;
-			btrpkt->counter = counter;
-			if(call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(ReceiverMsg)) == SUCCESS) {
-				busy = TRUE;
-			}
-		}
-	}
-
 	event void AMSend.sendDone(message_t * msg, error_t error) {
 		if(&pkt == msg){	//Verifying that this is done for message sent by this component
 			busy = FALSE;
@@ -44,7 +29,7 @@ implementation {
 
 	event void AMControl.startDone(error_t err) {
 		if(err == SUCCESS) {
-			call Timer0.startPeriodic(TIMER_PERIOD_MILLI);
+			//IDLE mode should be started here
 		}
 		else {
 			call AMControl.start();
@@ -56,8 +41,8 @@ implementation {
 
 	event message_t * Receive.receive(message_t * msg, void * payload,
 			uint8_t len) {
-		if(len == sizeof(ReceiverMsg)) {
-			ReceiverMsg * btrpkt = (ReceiverMsg * ) payload;
+		if(len == sizeof(ImageMsg)) {
+			ImageMsg * btrpkt = (ImageMsg * ) payload;
 			call Leds.set(btrpkt->counter);
 		}
 		return msg;

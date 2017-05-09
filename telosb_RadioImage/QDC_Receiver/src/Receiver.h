@@ -6,9 +6,9 @@
    TIMER_PERIOD_MILLI = 250
  };
 
- typedef nx_struct ReceiverMsg {
+ typedef nx_struct ImageMsg {
   nx_uint16_t nodeid;
   nx_uint16_t counter;
-} ReceiverMsg;
+} ImageMsg;
 
  #endif

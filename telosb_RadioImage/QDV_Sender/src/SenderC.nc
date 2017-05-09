@@ -12,6 +12,7 @@ module SenderC {
 }
 implementation {
 	uint16_t counter = 0;
+	uint16_t test = 0;
 
 	bool busy = FALSE;
 	message_t pkt;
@@ -25,10 +26,10 @@ implementation {
 		counter++;
 		call Leds.set(counter);
 		if( ! busy) {
-			SenderMsg * btrpkt = (SenderMsg * )(call Packet.getPayload(&pkt,sizeof(SenderMsg)));
+			ImageMsg * btrpkt = (ImageMsg * )(call Packet.getPayload(&pkt,sizeof(ImageMsg)));
 			btrpkt->nodeid = TOS_NODE_ID;
 			btrpkt->counter = counter;
-			if(call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(SenderMsg)) == SUCCESS) {
+			if(call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(ImageMsg)) == SUCCESS) {
 				busy = TRUE;
 			}
 		}
