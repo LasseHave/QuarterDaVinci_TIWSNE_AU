@@ -56,3 +56,8 @@ ifdef APP_MAKERULES
 else
   include $(MAKERULES)
 endif
+
+  CFLAGS += -I$(TOSDIR)/lib/printf
+  PFLAGS += -I$(TOSROOT)/tos/lib/printf
+PFLAGS += -DNEW_PRINTF_SEMANTICS
+

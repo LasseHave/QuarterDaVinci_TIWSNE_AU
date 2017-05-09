@@ -1,5 +1,6 @@
 #include <Timer.h>
 #include "Sender.h"
+#include "printf.h"
 
 module SenderC {
 	uses interface Boot;
@@ -19,11 +20,11 @@ implementation {
 
 	event void Boot.booted() {
 		call AMControl.start();
-
 	}
 
 	event void Timer0.fired() {
 		counter++;
+		printf("Here is a uint8: %u\n", 2);
 		call Leds.set(counter);
 		if( ! busy) {
 			ImageMsg * btrpkt = (ImageMsg * )(call Packet.getPayload(&pkt,sizeof(ImageMsg)));
@@ -52,4 +53,5 @@ implementation {
 
 	event void AMControl.stopDone(error_t err) {
 	}
+
 }

@@ -53,6 +53,10 @@
 # ----------------------------------------------------------------
 ifdef APP_MAKERULES
   include $(APP_MAKERULES)
+  CFLAGS += -I$(TOSDIR)/lib/printf
 else
   include $(MAKERULES)
+  CFLAGS += -I$(TOSDIR)/lib/printf
 endif
+
+
