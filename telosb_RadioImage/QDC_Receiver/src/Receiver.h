@@ -2,7 +2,7 @@
  #define RECEIVER_H
 
  enum {
- 	AM_SENDER = 6,
+ 	AM_RECEIVER = 6,
    TIMER_PERIOD_MILLI = 250
  };
 
