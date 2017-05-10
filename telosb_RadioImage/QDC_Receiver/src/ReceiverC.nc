@@ -1,6 +1,6 @@
 #include <Timer.h>
 #include "Receiver.h"
-#include "printf.h"
+
 
 module ReceiverC {
 	uses interface Boot;

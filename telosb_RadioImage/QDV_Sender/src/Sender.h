@@ -1,5 +1,8 @@
 #ifndef RECEIVER_H
  #define RECEIVER_H
+ 
+ #define printf(fmt,...)
+
 
  enum {
  	AM_SENDER = 6,
