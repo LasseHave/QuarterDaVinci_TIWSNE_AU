@@ -14,7 +14,6 @@ implementation {
 	components new TimerMilliC() as Timer0;
 	components ActiveMessageC;
 	components new AMSenderC(AM_SENDER);
-	
 	components PrintfC;
 	
 	//Block storage

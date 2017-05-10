@@ -1,5 +1,6 @@
 #include <Timer.h>
 #include "Receiver.h"
+#include "printf.h"
 
 configuration ReceiverAppC {
 }
@@ -9,6 +10,7 @@ implementation {
 	
 	//IO
 	components LedsC;
+	components PrintfC;
 	
 	//Receiver specific
 	components ReceiverC as App;
@@ -16,8 +18,9 @@ implementation {
 	components new AMSenderC(AM_RECEIVER);
 	components new AMReceiverC(AM_RECEIVER);
 	
+	
 	//Storage
-	components new BlockStorageC(SIZE_IMAGE) as ImageStorage;
+	//components new BlockStorageC(SIZE_IMAGE) as ImageStorage;
 	
 	//More for serial communication
 	
@@ -27,6 +30,4 @@ implementation {
 	App.AMControl->ActiveMessageC;
 	App.AMSend->AMSenderC;
 	App.Receive -> AMReceiverC;
-	App.BlockRead->ImageStorage;
-  	App.BlockWrite->ImageStorage;
 }

@@ -1,5 +1,6 @@
 #include <Timer.h>
 #include "Receiver.h"
+#include "printf.h"
 
 module ReceiverC {
 	uses interface Boot;
@@ -41,9 +42,11 @@ implementation {
 
 	event message_t * Receive.receive(message_t * msg, void * payload,
 			uint8_t len) {
+		
 		if(len == sizeof(ImageMsg)) {
 			ImageMsg * btrpkt = (ImageMsg * ) payload;
 			call Leds.set(btrpkt->counter);
+			printf("Here is a uint8: %u\n", btrpkt->counter);
 		}
 		return msg;
 	}
