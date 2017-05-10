@@ -1,8 +1,6 @@
 #ifndef RECEIVER_H
  #define RECEIVER_H
  
- #define printf(fmt,...)
-
  enum {
  	AM_RECEIVER = 6,
    TIMER_PERIOD_MILLI = 250,

@@ -29,6 +29,7 @@ implementation {
 
 	event void Boot.booted() {
 		setDummyData();
+		call Timer0.startPeriodic(1000);
 		//call AMControl.start();
 	}
 
