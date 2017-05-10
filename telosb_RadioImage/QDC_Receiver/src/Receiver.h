@@ -1,6 +1,5 @@
 #ifndef RECEIVER_H
  #define RECEIVER_H
- #include "printf.h"
  
  #define printf(fmt,...)
 
