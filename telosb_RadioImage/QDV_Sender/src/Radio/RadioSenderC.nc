@@ -63,7 +63,6 @@ implementation{
 	command error_t RadioSenderI.Send(uint8_t *ptr, uint16_t length){
 		if(isSending == FALSE)
 		{
-			
 			dataPtr = ptr;
 			dataPtrLength = length;
 			CreatePacketsCount(length);

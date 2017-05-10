@@ -1,8 +1,8 @@
 #include "Radio.h"
 
-module RadioReciverC
+module RadioReceiverC
 {
-	provides interface RadioReciverI; 
+	provides interface RadioReceiverI; 
 	uses interface Receive;
 	uses interface SplitControl as AMControl;
 	uses interface Packet;
@@ -14,9 +14,9 @@ implementation
 	uint16_t lastID = 0; 
 	uint16_t Rxlen = 0; 
 
-	void ReciveDone(error_t error)
+	void ReceiveDone(error_t error)
 	{
-		signal RadioReciverI.PacketRecived(Rxlen, error);
+		signal RadioReceiverI.PacketReceived(Rxlen, error);
 		buffer = NULL; 
 		lastID = 0; 
 		Rxlen = 0;
@@ -33,13 +33,13 @@ implementation
 		if(error != SUCCESS)
 		{
 			reciving = FALSE;
-			ReciveDone(FAIL);
+			ReceiveDone(FAIL);
 			return;
 		}
 		return; 
 	}
 
-	command error_t RadioReciverI.Start()
+	command error_t RadioReceiverI.Start()
 	{
 		if(reciving == FALSE)
 		{
@@ -50,9 +50,9 @@ implementation
 		return FAIL;
 	}
 
-	command error_t RadioReciverI.Stop()
+	command error_t RadioReceiverI.Stop()
 	{
-		ReciveDone(FAIL);
+		ReceiveDone(FAIL);
 		reciving = FALSE;
 		call AMControl.stop();
 		return SUCCESS;
@@ -68,7 +68,7 @@ implementation
 			radio_packet_msg_t* rcm = (radio_packet_msg_t*)payload;
 			
 			if(buffer == NULL && rcm->ID == 1)
-				buffer = signal RadioReciverI.GetBuffer(rcm->TotalSize);
+				buffer = signal RadioReceiverI.GetBuffer(rcm->TotalSize);
 			
 			if(buffer != NULL)
 			{					
@@ -80,10 +80,10 @@ implementation
 					Rxlen += rcm->len;
 			
 					if(Rxlen == rcm->TotalSize)
-						ReciveDone(SUCCESS);
+						ReceiveDone(SUCCESS);
 				}
 				else
-					ReciveDone(FAIL);
+					ReceiveDone(FAIL);
 			}
 		}
 		return msg;

@@ -2,12 +2,12 @@
 #include <message.h>
 #include <AM.h>
 
-interface RadioReciverI{
+interface RadioReceiverI{
 	command error_t Start();
 	
 	event uint8_t* GetBuffer(uint16_t length);
 	
-	event void PacketRecived(uint16_t length, error_t error);
+	event void PacketReceived(uint16_t length, error_t error);
 	
 	command error_t Stop();
 }

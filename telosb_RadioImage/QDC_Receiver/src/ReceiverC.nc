@@ -10,12 +10,39 @@ module ReceiverC {
 	uses interface AMSend;
 	uses interface SplitControl as AMControl; // used to control ActiveMessageC component
 	uses interface Receive;
+	uses interface RadioReceiverI as RadioComm;
 }
 implementation {
 	uint16_t counter = 0;
 
 	bool busy = FALSE;
 	message_t pkt;
+	uint8_t uncompressedData[1024];
+	uint8_t compressedData[1024];
+	uint16_t blockCount = 0;
+	
+	event uint8_t * RadioComm.GetBuffer(uint16_t length){
+		return uncompressedData;
+	}
+	
+	event void RadioComm.PacketReceived(uint16_t length, error_t error){
+		if(error == SUCCESS) {
+			int i;
+			
+			blockCount = (++blockCount)%65;
+			
+			//Set flash data
+			printf("%u", blockCount);
+			
+			if(blockCount == 0) {
+				call Leds.led2Toggle();
+			}
+			
+		} else {
+			call Leds.led0Toggle();
+		}
+	}
+	
 
 	event void Boot.booted() {
 		call AMControl.start();
