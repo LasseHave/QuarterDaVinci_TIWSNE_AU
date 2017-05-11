@@ -17,7 +17,6 @@ implementation {
 	components new AMReceiverC(AM_RECEIVER);
 	
 	//Storage
-	components new BlockStorageC(SIZE_IMAGE) as ImageStorage;
 	
 	//More for serial communication
 	
@@ -27,6 +26,5 @@ implementation {
 	App.AMControl->ActiveMessageC;
 	App.AMSend->AMSenderC;
 	App.Receive -> AMReceiverC;
-	App.BlockRead->ImageStorage;
-  	App.BlockWrite->ImageStorage;
+
 }
