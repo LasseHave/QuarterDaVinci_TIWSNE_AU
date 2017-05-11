@@ -1,5 +1,5 @@
 #include <Timer.h>
-#include "Sender.h"
+#include "RadioSender.h"
 #include "printf.h"
 
 configuration SenderAppC {
@@ -13,19 +13,27 @@ implementation {
 	components SenderC as App;
 	components new TimerMilliC() as Timer0;
 	components ActiveMessageC;
+	components RadioSenderC;
+	
+
+	
+	components RadioSenderC as RadioSender;
 	components new AMSenderC(AM_SENDER);
+	
 	
 	components PrintfC;
 	
 	//Block storage
 	
 	// Serial
+	
+	RadioSender.Packet->AMSenderC;
+	RadioSender.AMPacket->AMSenderC;
+	RadioSender.AMSend->AMSenderC;
 
 	App.Boot->MainC;
 	App.Leds->LedsC;
 	App.Timer0->Timer0;
-	App.Packet->AMSenderC;
-	App.AMPacket->AMSenderC;
-	App.AMSend->AMSenderC;
 	App.AMControl->ActiveMessageC;
+	App.RadioSender->RadioSenderC;
 }
