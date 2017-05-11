@@ -1,6 +1,6 @@
 #ifndef RECEIVER_H
  #define RECEIVER_H
- 
+
  enum {
  	AM_RECEIVER = 6,
    TIMER_PERIOD_MILLI = 250,

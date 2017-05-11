@@ -1,8 +1,5 @@
-#ifndef SENDER_H
-#define SENDER_H
-
-#define PAYLOADSIZE 50
-
+#ifndef RECEIVER_H
+ #define RECEIVER_H
 
  enum {
  	AM_SENDER = 6,
@@ -14,14 +11,5 @@
   nx_uint16_t nodeid;
   nx_uint16_t counter;
 } ImageMsg;
-
-
-
-typedef nx_struct radio_packet_msg_t {
-	nx_uint16_t TotalSize;
-	nx_uint16_t ID;
-	nx_uint8_t len;
-	nx_uint8_t Data[PAYLOADSIZE];
-} radio_packet_msg_t;
 
  #endif

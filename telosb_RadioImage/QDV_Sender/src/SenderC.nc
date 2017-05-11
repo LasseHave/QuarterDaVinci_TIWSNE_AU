@@ -6,31 +6,20 @@ module SenderC {
 	uses interface Boot;
 	uses interface Leds;
 	uses interface Timer<TMilli> as Timer0;
-	//uses interface Packet;
-	//uses interface AMPacket;
-	//uses interface AMSend;
-	//uses interface SplitControl as AMControl; // used to control ActiveMessageC component
-	uses interface RadioSenderI as RadioComm;
+	uses interface Packet;
+	uses interface AMPacket;
+	uses interface AMSend;
+	uses interface SplitControl as AMControl; // used to control ActiveMessageC component
 }
 implementation {
 	uint16_t counter = 0;
 	uint16_t test = 0;
+
 	bool busy = FALSE;
-	uint8_t uncompressedData[1024];
-	uint8_t compressedData[1024];
-	
-	void setDummyData(){
-		uint16_t i;
-		printf("Here is a uint8: %u\n", uncompressedData);
-		for(i=0; i<sizeof(uncompressedData) ; i++) {
-			uncompressedData[i] = (uint8_t)(i % 256);
-		}
-	}
+	message_t pkt;
 
 	event void Boot.booted() {
-		setDummyData();
-		call Timer0.startPeriodic(1000);
-		//call AMControl.start();
+		call AMControl.start();
 	}
 
 	event void Timer0.fired() {
@@ -38,16 +27,31 @@ implementation {
 		printf("Here is a uint8: %u\n", 2);
 		call Leds.set(counter);
 		if( ! busy) {
-			
-			if(call RadioComm.Send(uncompressedData, sizeof(uncompressedData)) == SUCCESS) {
+			ImageMsg * btrpkt = (ImageMsg * )(call Packet.getPayload(&pkt,sizeof(ImageMsg)));
+			btrpkt->nodeid = TOS_NODE_ID;
+			btrpkt->counter = counter;
+			if(call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(ImageMsg)) == SUCCESS) {
 				busy = TRUE;
 			}
 		}
 	}
-	
-	event void RadioComm.SendDone(){
-		busy = FALSE;
+
+	event void AMSend.sendDone(message_t * msg, error_t error) {
+		if(&pkt == msg) {	//Verifying that this is done for message sent by this component
+			busy = FALSE;
+		}
 	}
-	
+
+	event void AMControl.startDone(error_t err) {
+		if(err == SUCCESS) {
+			call Timer0.startPeriodic(TIMER_PERIOD_MILLI);
+		}
+		else {
+			call AMControl.start();
+		}
+	}
+
+	event void AMControl.stopDone(error_t err) {
+	}
 
 }
