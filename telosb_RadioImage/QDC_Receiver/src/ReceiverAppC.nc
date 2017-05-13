@@ -1,5 +1,5 @@
 #include <Timer.h>
-#include "Receiver.h"
+#include "RadioReceiver.h"
 #include "printf.h"
 
 configuration ReceiverAppC {
@@ -13,6 +13,7 @@ implementation {
 	
 	//Receiver specific
 	components ReceiverC as App;
+	components RadioReceiverC as RadioReceiver;
 	components ActiveMessageC;
 	components new AMSenderC(AM_RECEIVER);
 	components new AMReceiverC(AM_RECEIVER);
@@ -21,13 +22,16 @@ implementation {
 	
 	//Storage
 	
-	//More for serial communication
+	//RadioReceiver
 	
+	RadioReceiver.AMControl->ActiveMessageC;
+	RadioReceiver.AMSend->AMSenderC;
+	RadioReceiver.Receive -> AMReceiverC;
+	RadioReceiver.Leds->LedsC;
 
+	App.RadioReceiver->RadioReceiver;
 	App.Boot->MainC;
 	App.Leds->LedsC;
-	App.AMControl->ActiveMessageC;
-	App.AMSend->AMSenderC;
-	App.Receive -> AMReceiverC;
+	
 
 }

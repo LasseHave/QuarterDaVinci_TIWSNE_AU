@@ -31,10 +31,9 @@ implementation{
 	}
 
 	event void AMSend.sendDone(message_t * msg, error_t error) {
-		printf("SEND DONE");
-		printfflush();
 		if(&pkt == msg) {	//Verifying that this is done for message sent by this component
 			busy = FALSE;
+			signal RadioSenderI.SendDone();
 		}
 	}
 }

@@ -53,11 +53,13 @@ implementation {
 
 	event void AMControl.stopDone(error_t err) {
 		printf("stopDone");
+		printfflush();
 	}
 
 
 	event void RadioSender.SendDone(){
 		printf("SendDone");
+		printfflush();
 	}
 	
 	event void Notify.notify(button_state_t state) {
