@@ -11,11 +11,9 @@ implementation {
 	//IO
 	components LedsC;
 	components SenderC as App;
-	components new TimerMilliC() as Timer0;
 	components ActiveMessageC;
 	components RadioSenderC;
 	components UserButtonC;
-	components new TimerMilliC();
 
 	components RadioSenderC as RadioSender;
 	components new AMSenderC(AM_SENDER);
@@ -26,14 +24,14 @@ implementation {
 
 	// Serial
 
+	//RadioSender
 	RadioSender.Packet->AMSenderC;
 	RadioSender.AMPacket->AMSenderC;
 	RadioSender.AMSend->AMSenderC;
+	RadioSender.AMControl->ActiveMessageC;
 
 	App.Boot->MainC;
 	App.Leds->LedsC;
-	App.Timer0->Timer0;
-	App.AMControl->ActiveMessageC;
 	App.RadioSender->RadioSenderC;
 
 	//Button

@@ -7,9 +7,7 @@
 module SenderC {
 	uses interface Boot;
 	uses interface Leds;
-	uses interface Timer<TMilli> as Timer0;
 	uses interface RadioSenderI as RadioSender;
-	uses interface SplitControl as AMControl; // used to control ActiveMessageC component
     uses interface Notify<button_state_t> as Notify;
 }
 implementation {
@@ -28,36 +26,17 @@ implementation {
 	
 	event void Boot.booted() {
 		setDummyPictureData();
-		call AMControl.start();
+		call RadioSender.start();
 	}	
 
-	event void Timer0.fired() {
-		/*counter++;
-		printf("Here is a uint8: %u\n", counter);
-		printfflush();
-		call Leds.set(counter);
-		call RadioSender.Send(&counter, sizeof(ImageMsg));*/
-		
+
+	event void RadioSender.startDone(){
+		call Notify.enable();
+		call Leds.led1On();
 	}
+	
 
-	event void AMControl.startDone(error_t err) {
-		if(err == SUCCESS) {
-			//call Timer0.startPeriodic(TIMER_PERIOD_MILLI);
-			call Notify.enable();
-			call Leds.led1On();
-		}
-		else {
-			call AMControl.start();
-		}
-	}
-
-	event void AMControl.stopDone(error_t err) {
-		printf("stopDone");
-		printfflush();
-	}
-
-
-	event void RadioSender.SendDone(){
+	event void RadioSender.sendDone(){
 		printf("SendDone");
 		printfflush();
 	}
@@ -67,7 +46,7 @@ implementation {
 		if (state == BUTTON_PRESSED) {
 			counter++;
 			call Leds.set(counter);
-			call RadioSender.Send(pictureData);
+			call RadioSender.send(pictureData);
 		}
 	}																																																																					
 }
