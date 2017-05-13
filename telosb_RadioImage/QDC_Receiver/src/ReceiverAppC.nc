@@ -1,5 +1,6 @@
 #include <Timer.h>
 #include "Receiver.h"
+#include "printf.h"
 
 configuration ReceiverAppC {
 }
@@ -15,6 +16,8 @@ implementation {
 	components ActiveMessageC;
 	components new AMSenderC(AM_RECEIVER);
 	components new AMReceiverC(AM_RECEIVER);
+	
+	components PrintfC;
 	
 	//Storage
 	

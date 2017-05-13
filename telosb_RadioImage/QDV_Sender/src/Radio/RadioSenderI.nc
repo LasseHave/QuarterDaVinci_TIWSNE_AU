@@ -4,6 +4,6 @@
 
 interface RadioSenderI
 {
-	command error_t Send(uint16_t* ptr, uint16_t length);
+	command error_t Send(uint8_t* ptr);
 	event void SendDone();
 }
