@@ -5,5 +5,5 @@
 interface RadioReceiverI
 {
 	command error_t start();
-	event void packageReceived();
+	event void packageReceived(uint16_t byteCounter);
 }

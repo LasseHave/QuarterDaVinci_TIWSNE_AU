@@ -13,8 +13,10 @@ module RadioSenderC{
 implementation{
 	bool busy = FALSE;
 	message_t pkt;
-	uint8_t dataTest[28];
-	uint8_t i;
+	uint16_t sentBytes;
+	uint8_t *dataPtr;
+	uint16_t packageCounter;
+	
 	
 	command error_t RadioSenderI.start() {
 		call AMControl.start();
@@ -23,6 +25,7 @@ implementation{
 	
 	event void AMControl.startDone(error_t err) {
 		if(err == SUCCESS) {
+			sentBytes = 0;
 			signal RadioSenderI.startDone();
 		}
 		else {
@@ -34,26 +37,54 @@ implementation{
 		printf("stopDone");
 		printfflush();
 	}
-
-	command error_t RadioSenderI.send(uint8_t *data){
-		uint8_t maxPayload = call Packet.maxPayloadLength();
-		if( ! busy) {
-			ImageMsg * btrpkt = (ImageMsg * )(call Packet.getPayload(&pkt,sizeof(ImageMsg)));
-			btrpkt->nodeid = TOS_NODE_ID; 
-			memcpy(btrpkt->data, &data[0], 26);
-			
-			if(call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(ImageMsg)) == SUCCESS) {
+	
+	void createSinglePackage(uint16_t fromIndex, uint8_t lenght) {
+		ImageMsg * btrpkt = (ImageMsg * )(call Packet.getPayload(&pkt,sizeof(ImageMsg)));
+		btrpkt->nodeid = ++packageCounter;//TOS_NODE_ID; 
+		memcpy(btrpkt->data, &dataPtr[fromIndex], lenght);
+	}
+	
+	void sendPackage() {
+		if(call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(ImageMsg)) == SUCCESS) {
 				uint8_t size = sizeof(ImageMsg);
 				busy = TRUE;
+		} else {
+			printf("ERROR WHEN SENDING PACKAGE");
+		}
+	}
+
+	command error_t RadioSenderI.send(uint8_t *data){
+		if( ! busy) {
+			if(sentBytes == 0) { // initial call
+				packageCounter = 0;
+				dataPtr = data;
+				createSinglePackage(0, DATA_SIZE);
 			}
+			
+			sendPackage();
 		}
 		return SUCCESS;
 	}
 
 	event void AMSend.sendDone(message_t * msg, error_t error) {
 		if(&pkt == msg) {	//Verifying that this is done for message sent by this component
-			busy = FALSE;
-			signal RadioSenderI.sendDone();
+			if (sentBytes < PICTURE_PART_SIZE) {
+				
+				if((sentBytes + DATA_SIZE) > PICTURE_PART_SIZE) {
+					printf("Made it here");
+					printfflush();
+					createSinglePackage(sentBytes, PICTURE_PART_SIZE - sentBytes);
+				} else {
+					createSinglePackage(sentBytes, DATA_SIZE);
+				}
+				sentBytes = sentBytes + DATA_SIZE;
+				sendPackage();
+			} else 
+			{
+				busy = FALSE;
+				sentBytes = 0;
+				signal RadioSenderI.sendDone();
+			}
 		}
 	}
 }

@@ -9,14 +9,16 @@ module ReceiverC {
 	uses interface RadioReceiverI as RadioReceiver;
 }
 implementation {
+	uint16_t packagesReceived = 0;
+	uint16_t byteCounter = 0;
 	event void Boot.booted() {
 		call RadioReceiver.start();
 
 	}
 
 	
-	event void RadioReceiver.packageReceived() {
-		printf("Package Received!");
+	event void RadioReceiver.packageReceived(uint16_t byteCount) {
+		printf("Byte counter: %u  ", byteCount);
 		printfflush();
 	}
 }

@@ -5,8 +5,7 @@
  enum {
  	AM_RECEIVER = 6,
    TIMER_PERIOD_MILLI = 250,
-   SIZE_IMAGE = 65536,
-   MESSAGE_SIZE = 28
+   SIZE_IMAGE = 65536  // 256 x 256 image
  };
 
  typedef nx_struct ImageMsg {

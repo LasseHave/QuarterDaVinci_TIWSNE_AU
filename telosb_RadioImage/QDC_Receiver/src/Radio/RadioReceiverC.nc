@@ -14,6 +14,7 @@ module RadioReceiverC{
 }
 implementation{
 	uint16_t counter = 0;
+	uint16_t byteCounter = 0;
 
 	bool busy = FALSE;
 	message_t pkt;
@@ -42,20 +43,12 @@ implementation{
 
 	event message_t * Receive.receive(message_t * msg, void * payload,
 			uint8_t len) {
-				printf("Received package");
-				printf("receiver length: %u\n", sizeof(ImageMsg));
-				printfflush();
 		if(len == sizeof(ImageMsg)) {
 			ImageMsg * btrpkt = (ImageMsg * ) payload;
 			uint16_t i;
-			printf("Here is a uint8: %u\n", btrpkt->data[0]);
-			printf("Here is a uint8: %u\n", btrpkt->data[7]);
-			printf("Here is a uint8: %u\n", btrpkt->data[11]);
-			printf("Here is a uint8: %u\n", btrpkt->data[20]);
-			printf("Here is a uint8: %u\n", btrpkt->data[25]);
-			printfflush();
 			call Leds.set(++counter);
-			signal RadioReceiverI.packageReceived();
+			byteCounter = byteCounter + sizeof(btrpkt->data);
+			signal RadioReceiverI.packageReceived(btrpkt->nodeid);
 		}
 		return msg;
 	}
