@@ -17,8 +17,8 @@ implementation {
 	}
 
 	
-	event void RadioReceiver.packageReceived(uint16_t byteCount) {
-		printf("Byte counter: %u  ", byteCount);
+	event void RadioReceiver.packageReceived(uint16_t packageId) {
+		printf("packageId: %u  ", packageId);
 		printfflush();
 	}
 }

@@ -47,7 +47,7 @@ implementation{
 			ImageMsg * btrpkt = (ImageMsg * ) payload;
 			uint16_t i;
 			call Leds.set(++counter);
-			byteCounter = byteCounter + sizeof(btrpkt->data);
+			//byteCounter = byteCounter + sizeof(btrpkt->data);
 			signal RadioReceiverI.packageReceived(btrpkt->nodeid);
 		}
 		return msg;
