@@ -18,29 +18,30 @@ implementation {
 	uint8_t pictureData[SIZE_IMAGE/PICTURE_PART_NR]; 
 	uint8_t pictureDataPart = 0;
 	
-	void setDummyPictureData() {
+	void setDummyPictureData(uint8_t add) {
 		uint16_t i;
 		for (i = 0; i < (SIZE_IMAGE/PICTURE_PART_NR); i++) {
-			pictureData[i] = (uint8_t) (i % 255);
+			pictureData[i] = (uint8_t) ((i + add)% 255);
 		}
 	}
 	
 	void sendPicture() {
 		if(pictureDataPart < 8) {
 			//load next part of picture
+			setDummyPictureData(pictureDataPart);
 			call RadioSender.send(pictureData);
+			pictureDataPart++;
 		} else 
 		{
 			//Picture sent
-			call Leds.set(8);
+			call Leds.set(7);
+			pictureDataPart = 0;
 		}
-		pictureDataPart++;
-		printf("Picture part: %u  ", pictureDataPart);
-		printfflush();
+		
 	}
 	
 	event void Boot.booted() {
-		setDummyPictureData();
+		//setDummyPictureData(pictureDataPart);
 		call RadioSender.start();
 	}	
 

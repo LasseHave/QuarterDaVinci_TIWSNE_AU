@@ -14,9 +14,11 @@ implementation {
 	components ActiveMessageC;
 	components RadioSenderC;
 	components UserButtonC;
-
+	
 	components RadioSenderC as RadioSender;
 	components new AMSenderC(AM_SENDER);
+	components new AMReceiverC(AM_RECEIVER);
+	components new TimerMilliC() as AckTimer;
 
 	components PrintfC;
 
@@ -29,7 +31,9 @@ implementation {
 	RadioSender.AMPacket->AMSenderC;
 	RadioSender.AMSend->AMSenderC;
 	RadioSender.AMControl->ActiveMessageC;
-
+	RadioSender.Receive -> AMReceiverC;
+	RadioSender.AckTimer -> AckTimer;
+	
 	App.Boot->MainC;
 	App.Leds->LedsC;
 	App.RadioSender->RadioSenderC;

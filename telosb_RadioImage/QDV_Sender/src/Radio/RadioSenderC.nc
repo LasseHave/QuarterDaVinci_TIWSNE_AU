@@ -8,7 +8,10 @@ module RadioSenderC{
 	uses interface AMSend;
     uses interface Packet;
     uses interface AMPacket;
+    uses interface Receive;
     uses interface SplitControl as AMControl;
+    uses interface Timer<TMilli> as AckTimer;
+    
 }
 implementation{
 	bool busy = FALSE;
@@ -38,9 +41,20 @@ implementation{
 		printfflush();
 	}
 	
+	uint16_t calculateTotalNumberOfPackagesInPart() {
+		uint16_t totalPackages = (PICTURE_PART_SIZE / DATA_SIZE);
+		if((PICTURE_PART_SIZE % DATA_SIZE) != 0) {
+			totalPackages++;
+		}
+		return totalPackages;
+	}
+	
 	void createSinglePackage(uint16_t fromIndex, uint8_t lenght) {
 		ImageMsg * btrpkt = (ImageMsg * )(call Packet.getPayload(&pkt,sizeof(ImageMsg)));
-		btrpkt->nodeid = ++packageCounter;//TOS_NODE_ID; 
+		//packageCounter++;
+		btrpkt->nodeid = packageCounter;//TOS_NODE_ID; 
+		packageCounter++;
+		btrpkt->total_package_nr_in_part = calculateTotalNumberOfPackagesInPart();
 		memcpy(btrpkt->data, &dataPtr[fromIndex], lenght);
 	}
 	
@@ -59,8 +73,12 @@ implementation{
 				packageCounter = 0;
 				dataPtr = data;
 				createSinglePackage(0, DATA_SIZE);
+				sentBytes = sentBytes + DATA_SIZE;
 			}
-			
+			printf("packet 0: %d", dataPtr[0] );
+			printf("packet 2: %d ", dataPtr[2] );
+			printf("packet 4: %d", dataPtr[4] );
+			printfflush();
 			sendPackage();
 		}
 		return SUCCESS;
@@ -71,8 +89,6 @@ implementation{
 			if (sentBytes < PICTURE_PART_SIZE) {
 				
 				if((sentBytes + DATA_SIZE) > PICTURE_PART_SIZE) {
-					printf("Made it here");
-					printfflush();
 					createSinglePackage(sentBytes, PICTURE_PART_SIZE - sentBytes);
 				} else {
 					createSinglePackage(sentBytes, DATA_SIZE);
@@ -83,8 +99,29 @@ implementation{
 			{
 				busy = FALSE;
 				sentBytes = 0;
-				signal RadioSenderI.sendDone();
+				call AckTimer.startOneShot(5000);
+				//Wait for ack to be returned from receiver
 			}
 		}
 	}
+
+	event message_t * Receive.receive(message_t *msg, void *payload, uint8_t len){
+		if(len == sizeof(AckMsg)) {
+			call AckTimer.stop();
+			printf("Ack received");
+			printfflush();
+			signal RadioSenderI.sendDone();
+			//signal RadioSenderI.sendDone();
+		}
+		return msg;
+	}
+	
+	event void AckTimer.fired() {
+		//Wait with next part of picture until an ack is received
+    	//If this fires, ack not received 
+    	printf("Ack never recived, transmission stopped");
+    	printfflush();
+  }
+	
+
 }

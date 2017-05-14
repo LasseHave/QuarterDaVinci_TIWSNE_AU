@@ -15,8 +15,9 @@ implementation {
 	components ReceiverC as App;
 	components RadioReceiverC as RadioReceiver;
 	components ActiveMessageC;
-	components new AMSenderC(AM_RECEIVER);
+	components new AMSenderC(AM_SENDER);
 	components new AMReceiverC(AM_RECEIVER);
+	components new TimerMilliC() as AckTimer;
 	
 	components PrintfC;
 	
@@ -28,6 +29,8 @@ implementation {
 	RadioReceiver.AMSend->AMSenderC;
 	RadioReceiver.Receive -> AMReceiverC;
 	RadioReceiver.Leds->LedsC;
+	RadioReceiver.Packet->AMSenderC;
+	RadioReceiver.AckTimer->AckTimer;
 
 	App.RadioReceiver->RadioReceiver;
 	App.Boot->MainC;
