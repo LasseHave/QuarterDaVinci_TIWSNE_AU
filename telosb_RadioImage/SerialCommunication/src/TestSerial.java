@@ -125,7 +125,7 @@ public class TestSerial implements MessageListener {
 			{
 				System.out.println("Transfer is done. Reconstructing...");
 				// reconstruct image
-				File file = new File("image.bin");
+				File file = new File("clock.tiff");
 				byte[] recData = new byte[(int) file.length()];
 				int cnt1 = 0;
 				int cnt2 = 0;
@@ -136,16 +136,22 @@ public class TestSerial implements MessageListener {
 				{
 					for(cnt2 = 0; cnt2 < 64; cnt2++)
 					{
-						System.out.println("Do i actually do something???..." + cnt2);
 
 						recData[cnt3] = (byte)data[cnt1][cnt2];
 						cnt3++;
 					}
+					System.out.println("Do i actually do something???..." + cnt2);
+
 				}
 				try{
-					FileOutputStream out = new FileOutputStream("/mnt/hgfs/reimage.bin");
+					System.out.println("Do i get to the try?...");
+
+					FileOutputStream out = new FileOutputStream("/home/tinyos/Downloads/reimage.tiff");
+					//Make sure you have write access to the folder
 					try{
+						
 						out.write(recData);
+						out.flush();
 						out.close();
 						System.out.println("Image reconstruction completed");
 						System.exit(0);
@@ -179,7 +185,7 @@ public class TestSerial implements MessageListener {
 		TestSerial serial = new TestSerial(mif);
 		currentChunk = 0;
 
-		File file = new File("image.bin");
+		File file = new File("clock.tiff");
 		byte[] fileData = new byte[(int) file.length()];
 		DataInputStream dis = new DataInputStream(new FileInputStream(file));
 		dis.readFully(fileData);
