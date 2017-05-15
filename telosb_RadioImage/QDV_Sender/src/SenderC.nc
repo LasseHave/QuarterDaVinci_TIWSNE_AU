@@ -9,18 +9,17 @@ module SenderC {
 	uses interface Leds;
 	uses interface RadioSenderI as RadioSender;
     uses interface Notify<button_state_t> as Notify;
+    uses interface Flash;
 }
 implementation {
 	uint16_t counter = 0;
-	uint16_t test = 0;
-	message_t pkt;
-	 
-	uint8_t pictureData[SIZE_IMAGE/PICTURE_PART_NR]; 
+
+	uint8_t pictureData[PICTURE_PART_SIZE]; 
 	uint8_t pictureDataPart = 0;
 	
 	void setDummyPictureData(uint8_t add) {
 		uint16_t i;
-		for (i = 0; i < (SIZE_IMAGE/PICTURE_PART_NR); i++) {
+		for (i = 0; i < (PICTURE_PART_SIZE); i++) {
 			pictureData[i] = (uint8_t) ((i + add)% 255);
 		}
 	}
@@ -30,6 +29,7 @@ implementation {
 			//load next part of picture
 			setDummyPictureData(pictureDataPart);
 			call RadioSender.send(pictureData);
+			//flashPtr++;
 			pictureDataPart++;
 		} else 
 		{
@@ -41,7 +41,6 @@ implementation {
 	}
 	
 	event void Boot.booted() {
-		//setDummyPictureData(pictureDataPart);
 		call RadioSender.start();
 	}	
 
@@ -65,4 +64,20 @@ implementation {
 			sendPicture();
 		}
 	}																																																																					
+
+	event void Flash.readDone(error_t result){
+		printf("Read done");
+		printfflush();
+	}
+
+	event void Flash.writeDone(error_t result){
+		printf("Write done");
+		printfflush();
+	}
+
+
+	event void Flash.eraseDone(error_t result){
+		// TODO Auto-generated method stub
+	}
+
 }

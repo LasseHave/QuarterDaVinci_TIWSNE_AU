@@ -19,7 +19,7 @@
 } ImageMsg;
 
 typedef nx_struct AckMsg {
-  nx_uint8_t ack;
+  nx_uint16_t ack;
 } AckMsg;
 
  #endif

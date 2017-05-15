@@ -19,6 +19,9 @@ implementation {
 	components new AMSenderC(AM_SENDER);
 	components new AMReceiverC(AM_RECEIVER);
 	components new TimerMilliC() as AckTimer;
+	
+	components FlashC;
+	components new BlockStorageC(0); //?
 
 	components PrintfC;
 
@@ -33,6 +36,11 @@ implementation {
 	RadioSender.AMControl->ActiveMessageC;
 	RadioSender.Receive -> AMReceiverC;
 	RadioSender.AckTimer -> AckTimer;
+	
+	//FLASH
+	App.Flash -> FlashC;
+	FlashC.BlockRead -> BlockStorageC.BlockRead;
+	FlashC.BlockWrite -> BlockStorageC.BlockWrite;
 	
 	App.Boot->MainC;
 	App.Leds->LedsC;

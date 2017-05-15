@@ -8,12 +8,9 @@ module ReceiverC {
 	
 	uses interface RadioReceiverI as RadioReceiver;
 }
-implementation {
-	uint16_t packagesReceived = 0;
-	uint16_t byteCounter = 0;
-	
+implementation {	
 	uint8_t pictureData[PICTURE_PART_SIZE]; 
-	uint8_t pictureDataPart = 0;
+	uint8_t pictureDataPartsReceived = 0;
 	
 	event void Boot.booted() {
 		call RadioReceiver.start();
@@ -26,14 +23,17 @@ implementation {
 	
 	
 	event void RadioReceiver.packageReceived(uint16_t packageId) {
-		byteCounter = byteCounter + 1;
 		printf("one picture part received");
-		printf("Random test, should be %d: %d \n", 1000 % 255 ,pictureData[1000]);
+		printf("Random test, should be %d: %d \n", (1000+pictureDataPartsReceived) % 255 ,pictureData[1000]);
+		printf("Random test, should be %d: %d \n", (8000+pictureDataPartsReceived) % 255 ,pictureData[8000]);
+		printf("Random test, should be %d: %d \n", (8191+pictureDataPartsReceived) % 255 ,pictureData[8191]);
 		printf("\n");
-		
-		//printf("LastElement 254: %d \n",pictureData[PICTURE_PART_SIZE-1]);
-		
 		printfflush();
+		pictureDataPartsReceived++;
 		call Leds.led1Toggle();
+		
+		if(pictureDataPartsReceived == 8) {
+			call Leds.set(7);
+		}
 	}
 }

@@ -14,14 +14,14 @@ module RadioReceiverC{
     uses interface Timer<TMilli> as AckTimer;
 }
 implementation{
-	uint16_t counter = 0;
 	uint16_t byteCounter = 0;
 	uint16_t packageCounter = 0;
 	uint8_t* pictureBuffer = NULL;
+	uint16_t lastReceivedPackage = 1000; //just initial value, must be different from 0
+	uint16_t totalPackagesInPart = 0;
 	
 	bool busy = FALSE;
 	message_t pkt;
-	error_t errorCode;
 	
 	command error_t RadioReceiverI.start() {
 		call AMControl.start();
@@ -46,19 +46,26 @@ implementation{
 	}
 	
 	event void AMSend.sendDone(message_t *msg, error_t error){
-		// Do we need this? E.g. for ack,
-		printf("ack done");
-		printfflush();
+		// If all packages in picture part received:
+		if(packageCounter >= totalPackagesInPart) {
+			printf("I'm alive ");
+			printfflush();
+			byteCounter = 0;
+			packageCounter = 0;
+			signal RadioReceiverI.packageReceived(byteCounter);
+		}
 	}
 	
 	task void sendPictureParkAck() {
 		AckMsg * btrpkt = (AckMsg * )(call Packet.getPayload(&pkt,sizeof(AckMsg)));
-		btrpkt->ack = 1;
-		
+		btrpkt->ack = lastReceivedPackage;
+		//printf("ackk pck: %d \n", lastReceivedPackage);
+		//printfflush();
 		if(call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(AckMsg)) == SUCCESS) {
 			
+			
 		} else {
-			call AckTimer.startOneShot(1000);
+			call AckTimer.startOneShot(10);
 		}
 	}
 
@@ -67,33 +74,20 @@ implementation{
 		if(len == sizeof(ImageMsg)) {
 			ImageMsg * btrpkt = (ImageMsg * ) payload;
 			
-			if (btrpkt->nodeid == 1) {
-				printf("nodeid 1 received: \n");
-			}
-			//printf("total nr of packages: %d \n",btrpkt->total_package_nr_in_part);
-			if(btrpkt->nodeid < btrpkt->total_package_nr_in_part) {
-				memcpy(&pictureBuffer[(btrpkt->nodeid)*DATA_SIZE], btrpkt->data, DATA_SIZE);
-				//printf("nodeid: %d, data: %d \n", btrpkt->nodeid,btrpkt->data[24]);
-				call Leds.led0Toggle();
-			} else {
-				memcpy(&pictureBuffer[byteCounter], btrpkt->data, PICTURE_PART_SIZE-byteCounter);
-				//byteCounter = byteCounter + PICTURE_PART_SIZE-byteCounter;
-				printf("Node id (expexted 342)): %d   ", btrpkt->nodeid);
-			}
-			byteCounter = byteCounter + sizeof(btrpkt->data);
-			packageCounter++;
-			if (packageCounter >= 340) {
-				printf("packageCounter: %d \n",packageCounter);
+			if(btrpkt->nodeid != lastReceivedPackage) {
+				totalPackagesInPart = btrpkt->total_package_nr_in_part;
+				lastReceivedPackage = btrpkt->nodeid;
+				if(btrpkt->nodeid < btrpkt->total_package_nr_in_part-1) {
+					memcpy(&pictureBuffer[(btrpkt->nodeid)*DATA_SIZE], btrpkt->data, DATA_SIZE);
+					call Leds.led0Toggle();
+				} else {
+					memcpy(&pictureBuffer[byteCounter], btrpkt->data, (PICTURE_PART_SIZE-byteCounter));
+				}
+				byteCounter = byteCounter + sizeof(btrpkt->data);
+				packageCounter++;
 			}
 			
-			if(packageCounter >= btrpkt->total_package_nr_in_part) {
-				printf("I'm alive ");
-				printfflush();
-				signal RadioReceiverI.packageReceived(byteCounter);
-				byteCounter = 0;
-				packageCounter = 0;
-				call AckTimer.startOneShot(100);
-			}
+			call AckTimer.startOneShot(1);
 		}
 		return msg;
 	}
@@ -101,7 +95,4 @@ implementation{
 	event void AckTimer.fired(){
 		post sendPictureParkAck();
 	}
-	
-
-
 }
