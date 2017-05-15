@@ -14,7 +14,6 @@ module TestSerialC {
 		interface AMSend as SendStatus;
 		interface Packet;
 		interface PacketAcknowledgements as PacketAck;
-	
 		interface Flash;
 	}
 }
