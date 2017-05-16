@@ -17,6 +17,7 @@ implementation {
 
 	}
 
+	// When the radio is started we need the radio to know the address of the image buffer
 	event uint8_t * RadioReceiver.getPictureBuffer(){
 		return pictureData;
 	}

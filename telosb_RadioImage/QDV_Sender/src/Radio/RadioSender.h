@@ -11,7 +11,7 @@
    SIZE_IMAGE = 65536, // 256 x 256 image,
    PICTURE_PART_SIZE = SIZE_IMAGE/PICTURE_PART_NR
  };
-
+// the total number of sent bytes can not exceed 28 (Maybe we can change it but to verify later)
  typedef nx_struct ImageMsg {
   nx_uint16_t nodeid;
   nx_uint16_t total_package_nr_in_part;

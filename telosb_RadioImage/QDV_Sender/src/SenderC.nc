@@ -26,7 +26,7 @@ implementation {
 	
 	void sendPicture() {
 		if(pictureDataPart < 8) {
-			//load next part of picture
+			//load next part of picture from flash
 			setDummyPictureData(pictureDataPart);
 			call RadioSender.send(pictureData);
 			//flashPtr++;
@@ -52,6 +52,7 @@ implementation {
 	
 
 	event void RadioSender.sendDone(){
+		//send next part of the picture
 		sendPicture();
 		printf("SendDone");
 	}

@@ -46,6 +46,7 @@ implementation{
 	 */
 	void calculateTotalNumberOfPackagesInPart() {
 		totalPackages = (PICTURE_PART_SIZE / DATA_SIZE);
+		// add one more package if there is something left after the division
 		if((PICTURE_PART_SIZE % DATA_SIZE) != 0) {
 			totalPackages++;
 		}
@@ -89,6 +90,7 @@ implementation{
 			sentBytes = sentBytes + DATA_SIZE;
 	}
 
+	// If we haven't receivedacknowledgment within 5 second we try to retransmitt'
 	event void AMSend.sendDone(message_t * msg, error_t error) {
 			call AckTimer.startOneShot(5000);
 	}
