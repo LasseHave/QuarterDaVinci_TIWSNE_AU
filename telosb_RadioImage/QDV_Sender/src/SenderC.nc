@@ -1,5 +1,6 @@
 #include <Timer.h>
 #include "RadioSender.h"
+#include "TestSerial.h"
 #include "printf.h"
 #include <UserButton.h>
 
@@ -10,6 +11,7 @@ module SenderC {
 	uses interface RadioSenderI as RadioSender;
     uses interface Notify<button_state_t> as Notify;
     uses interface Flash;
+    uses interface TestSerialI as TestSerial;
 }
 implementation {
 	uint16_t counter = 0;
@@ -41,6 +43,7 @@ implementation {
 	}
 	
 	event void Boot.booted() {
+		call TestSerial.start();
 		call RadioSender.start();
 	}	
 
@@ -80,4 +83,10 @@ implementation {
 		// TODO Auto-generated method stub
 	}
 
+
+	event void TestSerial.transferDone(){
+		// TODO Auto-generated method stub
+		call Leds.led0Toggle();
+
+	}
 }
