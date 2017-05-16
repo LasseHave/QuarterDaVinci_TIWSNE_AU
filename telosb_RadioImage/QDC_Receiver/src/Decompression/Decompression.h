@@ -1,0 +1,6 @@
+#ifndef DECOMPRESSION_H
+#define DECOMPRESSION_H
+
+#define BLOCK_LENGTH 1024
+
+#endif

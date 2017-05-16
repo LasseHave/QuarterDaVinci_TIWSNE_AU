@@ -68,31 +68,32 @@ implementation{
 			call AckTimer.startOneShot(10);
 		}
 	}
-
+	// Every time we receive a package
 	event message_t * Receive.receive(message_t * msg, void * payload,
 			uint8_t len) {
 		if(len == sizeof(ImageMsg)) {
 			ImageMsg * btrpkt = (ImageMsg * ) payload;
 			
-			if(btrpkt->nodeid != lastReceivedPackage) {
+			if(btrpkt->nodeid != lastReceivedPackage) { // We do not want the same package twice
 				totalPackagesInPart = btrpkt->total_package_nr_in_part;
 				lastReceivedPackage = btrpkt->nodeid;
 				if(btrpkt->nodeid < btrpkt->total_package_nr_in_part-1) {
-					memcpy(&pictureBuffer[(btrpkt->nodeid)*DATA_SIZE], btrpkt->data, DATA_SIZE);
+					memcpy(&pictureBuffer[(btrpkt->nodeid)*DATA_SIZE], btrpkt->data, DATA_SIZE); // it copies the set of data into a proper memory address
 					call Leds.led0Toggle();
 				} else {
-					memcpy(&pictureBuffer[byteCounter], btrpkt->data, (PICTURE_PART_SIZE-byteCounter));
+					memcpy(&pictureBuffer[byteCounter], btrpkt->data, (PICTURE_PART_SIZE-byteCounter)); // put it into the last memory position
 				}
-				byteCounter = byteCounter + sizeof(btrpkt->data);
+				byteCounter = byteCounter + sizeof(btrpkt->data); // how many bytes we received
 				packageCounter++;
 			}
 			
-			call AckTimer.startOneShot(1);
+			call AckTimer.startOneShot(1); // w8 one milisecond - just for the acknowledgment ot work
 		}
 		return msg;
 	}
 	
 	event void AckTimer.fired(){
-		post sendPictureParkAck();
+		// post is put into the schedule
+		post sendPictureParkAck(); //send acknowledgment 
 	}
 }
