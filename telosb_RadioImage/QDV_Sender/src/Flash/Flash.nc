@@ -8,4 +8,7 @@ interface Flash
 
 	command error_t read(uint8_t *uint8Array, uint32_t chunkNum);
 	event void readDone(error_t result);
+	
+	//command error_t readLength(uint8_t* uint8Array, uint32_t from, uint16_t len);
+	
 }

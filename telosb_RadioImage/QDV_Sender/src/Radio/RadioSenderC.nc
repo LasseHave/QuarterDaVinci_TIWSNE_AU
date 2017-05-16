@@ -2,7 +2,6 @@
 #include "Timer.h"
 #include "printf.h"
 
-
 module RadioSenderC{
 	provides interface RadioSenderI; 
 	uses interface AMSend;

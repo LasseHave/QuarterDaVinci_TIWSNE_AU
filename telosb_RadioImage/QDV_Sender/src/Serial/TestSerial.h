@@ -1,8 +1,6 @@
 #ifndef TEST_SERIAL_H
 #define TEST_SERIAL_H
 
-#define TOSH_DATA_LENGTH 66
-
 typedef nx_struct chunk_msg {
   nx_uint16_t chunkNum;
   nx_uint8_t chunk[64];

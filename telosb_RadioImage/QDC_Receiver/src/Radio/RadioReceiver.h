@@ -1,6 +1,6 @@
 #ifndef RECEIVER_H
  #define RECEIVER_H
- #include <message.h> //to get TOSH_DATA_LENGTH
+ #include <message.h> //to get TOSH_DATA_LENGTH NOTE: Overwritten in makefile!
  
  enum {
  	AM_RECEIVER = 6,

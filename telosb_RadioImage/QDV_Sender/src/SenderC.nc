@@ -4,7 +4,6 @@
 #include "printf.h"
 #include <UserButton.h>
 
-
 module SenderC {
 	uses interface Boot;
 	uses interface Leds;
@@ -30,6 +29,7 @@ implementation {
 		if(pictureDataPart < 8) {
 			//load next part of picture
 			setDummyPictureData(pictureDataPart);
+			//call Flash.readLength(pictureData,pictureDataPart*PICTURE_PART_SIZE, PICTURE_PART_SIZE);
 			call RadioSender.send(pictureData);
 			//flashPtr++;
 			pictureDataPart++;

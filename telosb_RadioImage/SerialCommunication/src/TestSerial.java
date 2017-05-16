@@ -146,7 +146,7 @@ public class TestSerial implements MessageListener {
 				try{
 					System.out.println("Do i get to the try?...");
 
-					FileOutputStream out = new FileOutputStream("/home/tinyos/Downloads/reimage.tiff", );
+					FileOutputStream out = new FileOutputStream("/home/tinyos/Downloads/reimage.tiff");
 					//Make sure you have write access to the folder
 					try{
 						

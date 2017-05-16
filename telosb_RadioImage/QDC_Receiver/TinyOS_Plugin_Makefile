@@ -62,3 +62,4 @@ endif
   CFLAGS += -I$(TOSDIR)/lib/printf
   PFLAGS += -I$(TOSROOT)/tos/lib/printf
 PFLAGS += -DNEW_PRINTF_SEMANTICS
+  CFLAGS += -DTOSH_DATA_LENGTH=66

@@ -31,6 +31,12 @@ implementation
 		return Status;
 	}
 	
+	/*command error_t Flash.readLength(uint8_t* uint8Array, uint32_t from, uint16_t len)
+	{
+		error_t Status = call BlockRead.read(from,uint8Array,len);
+		return Status;
+	}*/
+	
 	event void BlockWrite.eraseDone(error_t result) 
 	{
 		signal Flash.eraseDone(result);

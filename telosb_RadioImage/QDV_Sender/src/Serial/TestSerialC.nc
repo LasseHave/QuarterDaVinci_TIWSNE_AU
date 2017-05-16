@@ -2,6 +2,7 @@
 #include "TestSerial.h"
 #include "Flash.h"
 #include <UserButton.h>
+#include "printf.h"
 
 module TestSerialC {
 	provides interface TestSerialI;
@@ -14,13 +15,14 @@ module TestSerialC {
 	uses interface Packet;
 	uses interface PacketAcknowledgements as PacketAck;
 	uses interface Flash;
+	uses interface Leds;
 }
 implementation {
 
 	message_t packet;
 	message_t chunk_pkt;
 	message_t status_pkt;
-
+	
 	uint16_t counter = 0;
 	int maxChunks = 1024;
  
@@ -66,7 +68,7 @@ implementation {
 		else
 		{
 			status_msg_t* statusMsg = (status_msg_t*)payload;
-	
+			call Leds.led1Toggle();
 			if(statusMsg->status == TRANSFER_TO_TELOS)
 			{
 				// getting Image from PC
@@ -113,12 +115,12 @@ implementation {
 				void* payload, uint8_t len) {
 		if (len != sizeof(chunk_msg_t)) 
 		{
+			call Leds.led0Toggle();
 			return bufPtr;
 		}
 		else
 		{
 			chunk_msg_t* data = (chunk_msg_t*)payload;
-	
 			call Flash.write(data->chunk, data->chunkNum);
 			sendIndex++;
 				
@@ -152,6 +154,9 @@ implementation {
 
 	event void Flash.writeDone(error_t result){
 			sendStatusMessage(TRANSFER_OK);
+			if(sendIndex == maxChunks) {
+				signal TestSerialI.transferDone();
+			}
 	}
 
 	event void Flash.readDone(error_t result)

@@ -10,6 +10,7 @@ implementation {
 	components SerialActiveMessageC as AM;
 	components FlashC;
 	components new BlockStorageC(BLOCK_VOLUME);
+	components LedsC;
 
 	App.Boot -> MainC.Boot;
 	App.Control -> AM;
@@ -18,7 +19,7 @@ implementation {
 	App.ReceiveStatus -> AM.Receive[AM_STATUS_MSG_T];
 	App.SendStatus -> AM.AMSend[AM_STATUS_MSG_T];
 	App.PacketAck -> AM.PacketAcknowledgements;
-	
+	App.Leds->LedsC;
 	App.Packet -> AM;
  
 	App.Flash -> FlashC;

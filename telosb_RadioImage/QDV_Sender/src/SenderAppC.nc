@@ -3,7 +3,6 @@
 #include "TestSerial.h"
 #include "StorageVolumes.h"
 #include "printf.h"
-
 configuration SenderAppC {
 }
 implementation {
@@ -50,6 +49,7 @@ implementation {
 	App.Boot->MainC;
 	App.Leds->LedsC;
 	App.RadioSender->RadioSenderC;
+	//App.Flash -> FlashC;
 	
 	//SERIAL
 	TestSerial.Control -> AM;
@@ -60,6 +60,7 @@ implementation {
 	TestSerial.PacketAck -> AM.PacketAcknowledgements;
 	TestSerial.Packet -> AM;
 	TestSerial.Flash -> FlashC;
+	TestSerial.Leds -> LedsC;
 	
 	FlashC.BlockRead -> BlockStorageC.BlockRead;
 	FlashC.BlockWrite -> BlockStorageC.BlockWrite;
