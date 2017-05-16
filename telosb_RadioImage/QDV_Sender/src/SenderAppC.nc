@@ -1,5 +1,7 @@
 #include <Timer.h>
 #include "RadioSender.h"
+#include "TestSerial.h"
+#include "StorageVolumes.h"
 #include "printf.h"
 
 configuration SenderAppC {
@@ -19,11 +21,14 @@ implementation {
 	components new AMSenderC(AM_SENDER);
 	components new AMReceiverC(AM_RECEIVER);
 	components new TimerMilliC() as AckTimer;
-	
-	components FlashC;
-	components new BlockStorageC(0); //?
 
 	components PrintfC;
+	
+	components TestSerialC as TestSerial;
+	components SerialActiveMessageC as AM;
+	components FlashC;
+	components new BlockStorageC(BLOCK_VOLUME);
+
 
 	//Block storage
 
@@ -38,13 +43,28 @@ implementation {
 	RadioSender.AckTimer -> AckTimer;
 	
 	//FLASH
-	App.Flash -> FlashC;
-	FlashC.BlockRead -> BlockStorageC.BlockRead;
-	FlashC.BlockWrite -> BlockStorageC.BlockWrite;
+	//App.Flash -> FlashC;
+	//FlashC.BlockRead -> BlockStorageC.BlockRead;
+	//FlashC.BlockWrite -> BlockStorageC.BlockWrite;
 	
 	App.Boot->MainC;
 	App.Leds->LedsC;
 	App.RadioSender->RadioSenderC;
+	
+	//SERIAL
+	TestSerial.Control -> AM;
+	TestSerial.ReceiveData -> AM.Receive[AM_CHUNK_MSG_T];
+	TestSerial.SendData -> AM.AMSend[AM_CHUNK_MSG_T];
+	TestSerial.ReceiveStatus -> AM.Receive[AM_STATUS_MSG_T];
+	TestSerial.SendStatus -> AM.AMSend[AM_STATUS_MSG_T];
+	TestSerial.PacketAck -> AM.PacketAcknowledgements;
+	TestSerial.Packet -> AM;
+	TestSerial.Flash -> FlashC;
+	
+	FlashC.BlockRead -> BlockStorageC.BlockRead;
+	FlashC.BlockWrite -> BlockStorageC.BlockWrite;
+	
+	App.TestSerial->TestSerial;
 
 	//Button
 	App.Notify->UserButtonC;
