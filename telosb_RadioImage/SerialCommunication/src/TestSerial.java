@@ -146,7 +146,7 @@ public class TestSerial implements MessageListener {
 				try{
 					System.out.println("Do i get to the try?...");
 
-					FileOutputStream out = new FileOutputStream("/home/tinyos/Downloads/reimage.tiff");
+					FileOutputStream out = new FileOutputStream("/home/tinyos/Downloads/reimage.tiff"); //tiff'
 					//Make sure you have write access to the folder
 					try{
 						
@@ -171,7 +171,7 @@ public class TestSerial implements MessageListener {
 	public static void main(String[] args) throws Exception {
 		String source = null;
 		//RandomAccessFile f = new RandomAccessFile("image.bin", "r");
-		source = "serial@/dev/ttyUSB0:telosb";
+		source = args[0]; //"serial@/dev/ttyUSB1:telosb";
 		PhoenixSource phoenix;
 		if (source == null) {
 			phoenix = BuildSource.makePhoenix(PrintStreamMessenger.err);
@@ -204,7 +204,7 @@ public class TestSerial implements MessageListener {
 			}
 		}
 		
-		if(args[0].equals("r"))
+		if(args[1].equals("r"))
     	{
 			System.out.println("Requesting Data");
 			status.set_status(TRANSFER_FROM_TELOS);

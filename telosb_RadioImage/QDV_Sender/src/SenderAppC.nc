@@ -49,7 +49,7 @@ implementation {
 	App.Boot->MainC;
 	App.Leds->LedsC;
 	App.RadioSender->RadioSenderC;
-	//App.Flash -> FlashC;
+	App.Flash -> FlashC;
 	
 	//SERIAL
 	TestSerial.Control -> AM;

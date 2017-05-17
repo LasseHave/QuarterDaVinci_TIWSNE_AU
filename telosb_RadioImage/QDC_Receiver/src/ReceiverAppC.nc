@@ -1,6 +1,8 @@
 #include <Timer.h>
 #include "RadioReceiver.h"
 #include "printf.h"
+#include "TestSerial.h"
+#include "StorageVolumes.h"
 
 configuration ReceiverAppC {
 }
@@ -21,6 +23,10 @@ implementation {
 	
 	components PrintfC;
 	
+	components TestSerialC as TestSerial;
+	components SerialActiveMessageC as AM;
+	components FlashC;
+	components new BlockStorageC(BLOCK_VOLUME);
 	//Storage
 	
 	//RadioReceiver
@@ -35,6 +41,25 @@ implementation {
 	App.RadioReceiver->RadioReceiver;
 	App.Boot->MainC;
 	App.Leds->LedsC;
+	App.TestSerial->TestSerial;
+	App.Flash -> FlashC;
+	
+		//SERIAL
+	TestSerial.Control -> AM;
+	TestSerial.ReceiveData -> AM.Receive[AM_CHUNK_MSG_T];
+	TestSerial.SendData -> AM.AMSend[AM_CHUNK_MSG_T];
+	TestSerial.ReceiveStatus -> AM.Receive[AM_STATUS_MSG_T];
+	TestSerial.SendStatus -> AM.AMSend[AM_STATUS_MSG_T];
+	TestSerial.PacketAck -> AM.PacketAcknowledgements;
+	TestSerial.Packet -> AM;
+	TestSerial.Flash -> FlashC;
+	TestSerial.Leds -> LedsC;
+	
+	FlashC.BlockRead -> BlockStorageC.BlockRead;
+	FlashC.BlockWrite -> BlockStorageC.BlockWrite;
+	
+	
+	
 	
 
 }

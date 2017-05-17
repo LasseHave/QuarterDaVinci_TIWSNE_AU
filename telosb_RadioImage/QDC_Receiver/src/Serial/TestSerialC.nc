@@ -153,8 +153,6 @@ implementation {
 	// Flash Events
 
 	event void Flash.writeDone(error_t result){
-		//printf("Write Done TestSerialC");
-		
 		call Leds.led1Toggle();
 			sendStatusMessage(TRANSFER_OK);
 			if(sendIndex == maxChunks) {
@@ -164,8 +162,6 @@ implementation {
 
 	event void Flash.readDone(error_t result)
 	{
-		//printf("Read Done TestSerialC");
-		
 		sendChunkMessage(sendArray);
 	}
 

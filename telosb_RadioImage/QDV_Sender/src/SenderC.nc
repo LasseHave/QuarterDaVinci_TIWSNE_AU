@@ -3,6 +3,7 @@
 #include "TestSerial.h"
 #include "printf.h"
 #include <UserButton.h>
+#include "Flash.h"
 
 module SenderC {
 	uses interface Boot;
@@ -14,24 +15,39 @@ module SenderC {
 }
 implementation {
 	uint16_t counter = 0;
+	uint16_t picCount = 0;
 
-	uint8_t pictureData[PICTURE_PART_SIZE]; 
+	//uint8_t pictureData[PICTURE_PART_SIZE]; 
+	uint8_t pictureData[PICTURE_PART_SIZE / 2];
+	uint8_t pictureData2[PICTURE_PART_SIZE / 2];
 	uint8_t pictureDataPart = 0;
 	
 	void setDummyPictureData(uint8_t add) {
 		uint16_t i;
-		for (i = 0; i < (PICTURE_PART_SIZE); i++) {
+		for (i = 0; i < (PICTURE_PART_SIZE/2); i++) {
 			pictureData[i] = (uint8_t) ((i + add)% 255);
 		}
 	}
 	
+	
 	void sendPicture() {
 		if(pictureDataPart < 8) {
 			//load next part of picture from flash
-			setDummyPictureData(pictureDataPart);
-			//call Flash.readLength(pictureData,pictureDataPart*PICTURE_PART_SIZE, PICTURE_PART_SIZE);
+			//setDummyPictureData(pictureDataPart);
+			call Leds.led0Off();
+			call Leds.led1Off();
+			call Leds.led2Off();
+			if(call Flash.readLength(pictureData,pictureDataPart*PICTURE_PART_SIZE, PICTURE_PART_SIZE) == SUCCESS) {
+				call Leds.led1On();
+			} else {
+				call Leds.led0On();
+			}
 			call RadioSender.send(pictureData);
+			setDummyPictureData(pictureDataPart);
+			//call Flash.writeLength(pictureData,pictureDataPart*PICTURE_PART_SIZE, PICTURE_PART_SIZE);
 			//flashPtr++;
+			
+			
 			pictureDataPart++;
 		} else 
 		{
@@ -65,19 +81,17 @@ implementation {
 		if (state == BUTTON_PRESSED) {
 			counter++;
 			call Leds.set(counter);
-			sendPicture();
+			//sendPicture();
+			setDummyPictureData(0);
+			//call Flash.writeLength(pictureData, 0, PICTURE_PART_SIZE/2);
+			call Flash.write(pictureData, 0);
+			
+			
+			
 		}
 	}																																																																					
 
-	event void Flash.readDone(error_t result){
-		printf("Read done");
-		printfflush();
-	}
-
-	event void Flash.writeDone(error_t result){
-		printf("Write done");
-		printfflush();
-	}
+	
 
 
 	event void Flash.eraseDone(error_t result){
@@ -87,7 +101,21 @@ implementation {
 
 	event void TestSerial.transferDone(){
 		// TODO Auto-generated method stub
-		call Leds.led0Toggle();
+		//call Leds.led0Toggle();
 
+	}
+
+	event void Flash.writeDone(error_t result){
+		// TODO Auto-generated method stub
+		//call Leds.led0Toggle();
+		call Flash.read(pictureData2, 0);
+	}
+
+	event void Flash.readDone(error_t result){
+		printf("Expected: %d -> was %d", pictureData[0], pictureData2[0]);
+		printf("Expected: %d -> was %d", pictureData[5], pictureData2[5]);
+		printf("Expected: %d -> was %d", pictureData[32], pictureData2[32]);
+		printf("Expected: %d -> was %d", pictureData[50], pictureData2[50]);
+		printfflush();
 	}
 }

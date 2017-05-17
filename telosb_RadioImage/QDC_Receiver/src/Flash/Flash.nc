@@ -12,5 +12,4 @@ interface Flash
 	command error_t readLength(uint8_t* uint8Array, uint32_t from, uint16_t len);
 	
 	command error_t writeLength(uint8_t* uint8Array, uint32_t from, uint16_t len);
-	
 }
