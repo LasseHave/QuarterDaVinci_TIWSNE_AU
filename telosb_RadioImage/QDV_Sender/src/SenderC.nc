@@ -17,6 +17,8 @@ implementation {
 	uint16_t counter = 0;
 	uint16_t picCount = 0;
 	bool isSending = FALSE;
+	
+	uint16_t shouldFlash = 0;
 
 	uint8_t pictureData[PICTURE_PART_SIZE]; 
 	//uint8_t pictureData[PICTURE_PART_SIZE / 2];
@@ -44,10 +46,10 @@ implementation {
 			} else {
 				call Leds.led0On();
 			}*/
+
 			
-			printf("%d", pictureDataPart);
-			printfflush();
-			call Flash.readLength(pictureData,pictureDataPart*PICTURE_PART_SIZE, PICTURE_PART_SIZE);
+			call Flash.read(&pictureData[shouldFlash * 64], shouldFlash * 64);
+			//call Flash.readLength(pictureData,pictureDataPart*PICTURE_PART_SIZE, PICTURE_PART_SIZE);
 			
 		
 		} else 
@@ -87,9 +89,7 @@ implementation {
 			//setDummyPictureData(0);
 			//call Flash.writeLength(pictureData, 0, PICTURE_PART_SIZE/2);
 			//call Flash.write(pictureData, 0);
-			
-			
-			
+
 		}
 	}																																																																					
 
@@ -114,10 +114,18 @@ implementation {
 	}
 
 	event void Flash.readDone(error_t result){
-		if(isSending){
-			call RadioSender.send(pictureData);	
-			pictureDataPart++;
+		
+		if(shouldFlash == 127){
+			if(isSending){
+				call RadioSender.send(pictureData);	
+				pictureDataPart++;
+			}
 		}
+		else{
+			shouldFlash++;
+			sendPicture();
+		}
+
 		
 	}
 }
