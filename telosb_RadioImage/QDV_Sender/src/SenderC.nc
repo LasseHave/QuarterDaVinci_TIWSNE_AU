@@ -16,10 +16,11 @@ module SenderC {
 implementation {
 	uint16_t counter = 0;
 	uint16_t picCount = 0;
+	bool isSending = FALSE;
 
-	//uint8_t pictureData[PICTURE_PART_SIZE]; 
-	uint8_t pictureData[PICTURE_PART_SIZE / 2];
-	uint8_t pictureData2[PICTURE_PART_SIZE / 2];
+	uint8_t pictureData[PICTURE_PART_SIZE]; 
+	//uint8_t pictureData[PICTURE_PART_SIZE / 2];
+	//uint8_t pictureData2[PICTURE_PART_SIZE / 2];
 	uint8_t pictureDataPart = 0;
 	
 	void setDummyPictureData(uint8_t add) {
@@ -34,25 +35,26 @@ implementation {
 		if(pictureDataPart < 8) {
 			//load next part of picture from flash
 			//setDummyPictureData(pictureDataPart);
+			isSending = TRUE;
 			call Leds.led0Off();
 			call Leds.led1Off();
 			call Leds.led2Off();
-			if(call Flash.readLength(pictureData,pictureDataPart*PICTURE_PART_SIZE, PICTURE_PART_SIZE) == SUCCESS) {
+			/*if(call Flash.readLength(pictureData,pictureDataPart*PICTURE_PART_SIZE, PICTURE_PART_SIZE) == SUCCESS) {
 				call Leds.led1On();
 			} else {
 				call Leds.led0On();
-			}
-			call RadioSender.send(pictureData);
-			setDummyPictureData(pictureDataPart);
-			//call Flash.writeLength(pictureData,pictureDataPart*PICTURE_PART_SIZE, PICTURE_PART_SIZE);
-			//flashPtr++;
+			}*/
 			
+			printf("%d", pictureDataPart);
+			printfflush();
+			call Flash.readLength(pictureData,pictureDataPart*PICTURE_PART_SIZE, PICTURE_PART_SIZE);
 			
-			pictureDataPart++;
+		
 		} else 
 		{
 			//Picture sent
 			call Leds.set(7);
+			isSending = FALSE;
 			pictureDataPart = 0;
 		}
 		
@@ -81,10 +83,10 @@ implementation {
 		if (state == BUTTON_PRESSED) {
 			counter++;
 			call Leds.set(counter);
-			//sendPicture();
-			setDummyPictureData(0);
+			sendPicture();
+			//setDummyPictureData(0);
 			//call Flash.writeLength(pictureData, 0, PICTURE_PART_SIZE/2);
-			call Flash.write(pictureData, 0);
+			//call Flash.write(pictureData, 0);
 			
 			
 			
@@ -108,14 +110,14 @@ implementation {
 	event void Flash.writeDone(error_t result){
 		// TODO Auto-generated method stub
 		//call Leds.led0Toggle();
-		call Flash.read(pictureData2, 0);
+		//call Flash.read(pictureData2, 0);
 	}
 
 	event void Flash.readDone(error_t result){
-		printf("Expected: %d -> was %d", pictureData[0], pictureData2[0]);
-		printf("Expected: %d -> was %d", pictureData[5], pictureData2[5]);
-		printf("Expected: %d -> was %d", pictureData[32], pictureData2[32]);
-		printf("Expected: %d -> was %d", pictureData[50], pictureData2[50]);
-		printfflush();
+		if(isSending){
+			call RadioSender.send(pictureData);	
+			pictureDataPart++;
+		}
+		
 	}
 }
