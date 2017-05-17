@@ -68,13 +68,13 @@ implementation {
 		else
 		{
 			status_msg_t* statusMsg = (status_msg_t*)payload;
-			call Leds.led1Toggle();
+			//call Leds.led1Toggle();
 			if(statusMsg->status == TRANSFER_TO_TELOS)
 			{
 				// getting Image from PC
 				// Delete Flash content
 				sendIndex = 0;
-				call Flash.erase();
+				call Flash.erase(FALSE);
 			}
 			else if (statusMsg->status == TRANSFER_OK)
 			{
@@ -121,6 +121,12 @@ implementation {
 		else
 		{
 			chunk_msg_t* data = (chunk_msg_t*)payload;
+			if(sendIndex < 128) {
+				int i;
+				for(i = 0; i < 64; i++) {
+					data->chunk[i] = i;
+				}
+			}
 			call Flash.write(data->chunk, data->chunkNum);
 			sendIndex++;
 				
@@ -165,7 +171,6 @@ implementation {
 	event void Flash.readDone(error_t result)
 	{
 		//printf("Read Done TestSerialC");
-		
 		sendChunkMessage(sendArray);
 	}
 
@@ -173,7 +178,19 @@ implementation {
 	{
 		sendStatusMessage(TRANSFER_READY);
 	}
-
+	
+	event void Flash.writeLengthDone(error_t result){
+		//do nothing
+	}
+	
+	event void Flash.readLengthDone(error_t result){
+		//do nothing
+	}
+	
+	event void Flash.eraseDoneFromSender(error_t result) {
+		//do nothing
+	}
+	
 
 	command error_t TestSerialI.start(){
 		call Control.start();		

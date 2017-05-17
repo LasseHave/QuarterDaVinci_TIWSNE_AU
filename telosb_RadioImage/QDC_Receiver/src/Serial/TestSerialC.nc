@@ -153,11 +153,11 @@ implementation {
 	// Flash Events
 
 	event void Flash.writeDone(error_t result){
-		call Leds.led1Toggle();
-			sendStatusMessage(TRANSFER_OK);
-			if(sendIndex == maxChunks) {
-				signal TestSerialI.transferDone();
-			}
+//		call Leds.led1Toggle();
+//			sendStatusMessage(TRANSFER_OK);
+//			if(sendIndex == maxChunks) {
+//				signal TestSerialI.transferDone();
+//			}
 	}
 
 	event void Flash.readDone(error_t result)

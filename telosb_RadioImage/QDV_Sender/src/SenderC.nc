@@ -16,6 +16,7 @@ module SenderC {
 implementation {
 	uint16_t counter = 0;
 	uint16_t picCount = 0;
+	uint16_t writeCount = 0;
 	bool isSending = FALSE;
 	
 	uint16_t shouldFlash = 0;
@@ -27,8 +28,8 @@ implementation {
 	
 	void setDummyPictureData(uint8_t add) {
 		uint16_t i;
-		for (i = 0; i < (PICTURE_PART_SIZE/2); i++) {
-			pictureData[i] = (uint8_t) ((i + add)% 255);
+		for (i = 0; i < (PICTURE_PART_SIZE); i++) {
+			pictureData[i] = (uint8_t) ((i + add)% 64);
 		}
 	}
 	
@@ -63,13 +64,15 @@ implementation {
 	}
 	
 	event void Boot.booted() {
+		call Notify.enable();
 		call TestSerial.start();
-		call RadioSender.start();
+		
+		//call RadioSender.start();
 	}	
 
 
 	event void RadioSender.startDone(){
-		call Notify.enable();
+		//call Notify.enable();
 		call Leds.led1On();
 	}
 	
@@ -84,8 +87,11 @@ implementation {
 		call Leds.led2Toggle();
 		if (state == BUTTON_PRESSED) {
 			counter++;
-			call Leds.set(counter);
-			sendPicture();
+			//call Leds.set(counter);
+			setDummyPictureData(0);
+			call Flash.readLength(pictureData,0, PICTURE_PART_SIZE);
+			//call Flash.erase(TRUE);
+			//sendPicture();
 			//setDummyPictureData(0);
 			//call Flash.writeLength(pictureData, 0, PICTURE_PART_SIZE/2);
 			//call Flash.write(pictureData, 0);
@@ -115,7 +121,7 @@ implementation {
 
 	event void Flash.readDone(error_t result){
 		
-		if(shouldFlash == 127){
+		/*if(shouldFlash == 127){
 			if(isSending){
 				call RadioSender.send(pictureData);	
 				pictureDataPart++;
@@ -124,8 +130,32 @@ implementation {
 		else{
 			shouldFlash++;
 			sendPicture();
-		}
+		}*/
 
 		
+	}
+	
+	event void Flash.eraseDoneFromSender(error_t result) {
+		call Leds.led0On();
+		call Flash.writeLength(pictureData, 0, PICTURE_PART_SIZE);
+		
+		//do nothing
+	}
+	
+	event void Flash.readLengthDone(error_t result) {
+		call Flash.erase(TRUE);
+	}
+	
+	event void Flash.writeLengthDone(error_t result) {
+		if(result != SUCCESS) {
+			//call Leds.led1On();
+		}
+		if(writeCount < 8) {
+			writeCount++;
+			call Flash.writeLength(pictureData, PICTURE_PART_SIZE*writeCount, PICTURE_PART_SIZE);	
+			
+		} {
+			call Leds.led2On();
+		}
 	}
 }

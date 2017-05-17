@@ -14,6 +14,7 @@ module ReceiverC {
 implementation {	
 	uint8_t pictureData[PICTURE_PART_SIZE]; 
 	uint8_t pictureDataPartsReceived = 0;
+	uint16_t flashCounter;
 	
 	event void Boot.booted() {
 		call TestSerial.start();
@@ -25,6 +26,11 @@ implementation {
 		return pictureData;
 	}
 	
+	void storePicturePartReceivedIntoFlash() {
+		if (flashCounter < 128 ) {
+			call Flash.write(&pictureData[flashCounter * 64], flashCounter * 64);
+		}
+	}
 	
 	event void RadioReceiver.packageReceived(uint16_t packageId) {
 		printf("one picture part received");
@@ -33,7 +39,10 @@ implementation {
 		printf("Random test, should be %d: %d \n", (8191+pictureDataPartsReceived) % 255 ,pictureData[8191]);
 		printf("\n");
 		printfflush();
-		call Flash.writeLength(pictureData, (uint32_t)pictureDataPartsReceived*PICTURE_PART_SIZE, (uint16_t) PICTURE_PART_SIZE);
+		
+		flashCounter = 0;
+		storePicturePartReceivedIntoFlash();
+		
 		pictureDataPartsReceived++;
 		call Leds.led1Toggle();
 		
@@ -56,6 +65,7 @@ implementation {
 	event void Flash.writeDone(error_t result){
 		// TODO Auto-generated method stub
 		call Leds.led0Toggle();
+		storePicturePartReceivedIntoFlash();
 	}
 
 	event void Flash.readDone(error_t result){
