@@ -21,6 +21,7 @@ implementation{
 	uint16_t totalPackagesInPart = 0;
 	
 	bool busy = FALSE;
+	bool savingToFlash = FALSE;
 	message_t pkt;
 	
 	command error_t RadioReceiverI.start() {
@@ -47,13 +48,13 @@ implementation{
 	
 	event void AMSend.sendDone(message_t *msg, error_t error){
 		// If all packages in picture part received:
-		if(packageCounter >= totalPackagesInPart) {
-			printf("I'm alive ");
-			printfflush();
-			byteCounter = 0;
-			packageCounter = 0;
-			signal RadioReceiverI.packageReceived(byteCounter);
-		}
+//		if(packageCounter >= totalPackagesInPart) {
+//			printf("I'm alive ");
+//			printfflush();
+//			byteCounter = 0;
+//			packageCounter = 0;
+//			signal RadioReceiverI.packageReceived(byteCounter);
+//		}
 	}
 	
 	task void sendPictureParkAck() {
@@ -61,17 +62,26 @@ implementation{
 		btrpkt->ack = lastReceivedPackage;
 		//printf("ackk pck: %d \n", lastReceivedPackage);
 		//printfflush();
-		if(call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(AckMsg)) == SUCCESS) {
-			
-			
-		} else {
-			call AckTimer.startOneShot(10);
+		if(packageCounter >= totalPackagesInPart) {
+			printf("I'm alive ");
+			printfflush();
+			byteCounter = 0;
+			packageCounter = 0;
+			savingToFlash = TRUE;
+			signal RadioReceiverI.packageReceived(byteCounter);
+		} else { //If it's the last package in set of packages, we wait sending the ack.
+			if(call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(AckMsg)) == SUCCESS) {
+				
+				
+			} else {
+				call AckTimer.startOneShot(10);
+			}
 		}
 	}
 	// Every time we receive a package
 	event message_t * Receive.receive(message_t * msg, void * payload,
 			uint8_t len) {
-		if(len == sizeof(ImageMsg)) {
+		if(!savingToFlash && len == sizeof(ImageMsg)) {
 			ImageMsg * btrpkt = (ImageMsg * ) payload;
 			
 			if(btrpkt->nodeid != lastReceivedPackage) { // We do not want the same package twice
@@ -95,5 +105,15 @@ implementation{
 	event void AckTimer.fired(){
 		// post is put into the schedule
 		post sendPictureParkAck(); //send acknowledgment 
+	}
+	
+	command void RadioReceiverI.readyForNextPart() {
+		savingToFlash = FALSE;
+		if(call AMSend.send(AM_BROADCAST_ADDR, &pkt, sizeof(AckMsg)) == SUCCESS) {
+				
+				
+		} else {
+			call AckTimer.startOneShot(10);
+		}
 	}
 }

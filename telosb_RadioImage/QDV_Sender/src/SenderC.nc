@@ -16,8 +16,9 @@ module SenderC {
 implementation {
 	uint16_t counter = 0;
 	uint16_t picCount = 0;
-	uint16_t writeCount = 0;
+	uint8_t writeCount = 0;
 	bool isSending = FALSE;
+	bool first = TRUE;
 	
 	uint16_t shouldFlash = 0;
 
@@ -33,6 +34,15 @@ implementation {
 		}
 	}
 	
+	void loadNextPartOfPicture() {
+		if(pictureDataPart < 8) {
+			call Flash.readLength(pictureData,pictureDataPart*PICTURE_PART_SIZE, PICTURE_PART_SIZE);
+			pictureDataPart++;
+		} else {
+			//Transmission done
+			call Leds.set(7);
+		}
+	}
 	
 	void sendPicture() {
 		if(pictureDataPart < 8) {
@@ -49,7 +59,7 @@ implementation {
 			}*/
 
 			
-			call Flash.read(&pictureData[shouldFlash * 64], shouldFlash * 64);
+			//call Flash.read(&pictureData[shouldFlash * 64], shouldFlash * 64);
 			//call Flash.readLength(pictureData,pictureDataPart*PICTURE_PART_SIZE, PICTURE_PART_SIZE);
 			
 		
@@ -66,32 +76,31 @@ implementation {
 	event void Boot.booted() {
 		call Notify.enable();
 		call TestSerial.start();
-		
-		//call RadioSender.start();
 	}	
 
 
 	event void RadioSender.startDone(){
 		//call Notify.enable();
 		call Leds.led1On();
+		loadNextPartOfPicture();
 	}
 	
 
 	event void RadioSender.sendDone(){
 		//send next part of the picture
-		sendPicture();
+		loadNextPartOfPicture();
 		printf("SendDone");
 	}
 	
 	event void Notify.notify(button_state_t state) {
-		call Leds.led2Toggle();
 		if (state == BUTTON_PRESSED) {
-			counter++;
-			//call Leds.set(counter);
-			setDummyPictureData(0);
-			call Flash.readLength(pictureData,0, PICTURE_PART_SIZE);
-			//call Flash.erase(TRUE);
-			//sendPicture();
+			call RadioSender.start();
+			//counter++;
+			call Leds.set(counter);
+			
+//			call Flash.readLength(pictureData,0, PICTURE_PART_SIZE);//why readflashlenght/write works
+			
+			//sendPicture();										
 			//setDummyPictureData(0);
 			//call Flash.writeLength(pictureData, 0, PICTURE_PART_SIZE/2);
 			//call Flash.write(pictureData, 0);
@@ -104,22 +113,22 @@ implementation {
 
 	event void Flash.eraseDone(error_t result){
 		// TODO Auto-generated method stub
+		
 	}
 
 
 	event void TestSerial.transferDone(){
 		// TODO Auto-generated method stub
-		//call Leds.led0Toggle();
+		call Leds.led1On();
 
 	}
 
 	event void Flash.writeDone(error_t result){
 		// TODO Auto-generated method stub
-		//call Leds.led0Toggle();
-		//call Flash.read(pictureData2, 0);
 	}
 
 	event void Flash.readDone(error_t result){
+		
 		
 		/*if(shouldFlash == 127){
 			if(isSending){
@@ -136,26 +145,38 @@ implementation {
 	}
 	
 	event void Flash.eraseDoneFromSender(error_t result) {
-		call Leds.led0On();
+//		call Leds.led0On();
 		call Flash.writeLength(pictureData, 0, PICTURE_PART_SIZE);
-		
 		//do nothing
 	}
 	
 	event void Flash.readLengthDone(error_t result) {
-		call Flash.erase(TRUE);
+		//setDummyPictureData(0);
+		//call Flash.erase(TRUE);							//why readflashlenght/write works 
+		
+		printf("one picture part send");
+		printf("Random test, should be 1: %d \n", pictureData[1]);
+		printf("Random test, should be 2: %d \n", pictureData[2]);
+		printf("Random test, should be 3: %d \n" ,pictureData[3]);
+		printf("\n");
+		printfflush();
+		
+		call RadioSender.send(pictureData);	//use this!
 	}
 	
-	event void Flash.writeLengthDone(error_t result) {
+	event void Flash.writeLengthDone(error_t result) {//why readflashlenght/write works
 		if(result != SUCCESS) {
 			//call Leds.led1On();
 		}
 		if(writeCount < 8) {
 			writeCount++;
+			//setDummyPictureData(writeCount);
 			call Flash.writeLength(pictureData, PICTURE_PART_SIZE*writeCount, PICTURE_PART_SIZE);	
 			
-		} {
-			call Leds.led2On();
+		} else {
+			printf("Done????");
+			printfflush();
+			call Leds.led2Toggle();
 		}
 	}
 }

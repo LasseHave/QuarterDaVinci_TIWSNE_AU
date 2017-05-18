@@ -121,12 +121,13 @@ implementation {
 		else
 		{
 			chunk_msg_t* data = (chunk_msg_t*)payload;
-			if(sendIndex < 128) {
-				int i;
-				for(i = 0; i < 64; i++) {
-					data->chunk[i] = i;
-				}
-			}
+//			if(sendIndex < 128) {			//why readflashlenght/write works
+//				int i;				
+//				for(i = 0; i < 128; i++) {
+//					data->chunk[i] = i;
+//				}
+//			}								//why readflashlenght/write works
+			
 			call Flash.write(data->chunk, data->chunkNum);
 			sendIndex++;
 				
@@ -153,8 +154,11 @@ implementation {
 	
 	}
 
-	event void Control.startDone(error_t err) {}
-		event void Control.stopDone(error_t err) {}
+	event void Control.startDone(error_t err) {
+		call Leds.led2On();
+	}
+	
+	event void Control.stopDone(error_t err) {}
 	
 	// Flash Events
 

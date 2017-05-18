@@ -68,13 +68,13 @@ implementation {
 		else
 		{
 			status_msg_t* statusMsg = (status_msg_t*)payload;
-			call Leds.led1Toggle();
+			//call Leds.led1Toggle();
 			if(statusMsg->status == TRANSFER_TO_TELOS)
 			{
 				// getting Image from PC
 				// Delete Flash content
 				sendIndex = 0;
-				call Flash.erase();
+				call Flash.erase(FALSE);
 			}
 			else if (statusMsg->status == TRANSFER_OK)
 			{
@@ -147,34 +147,51 @@ implementation {
 	
 	}
 
-	event void Control.startDone(error_t err) {}
-		event void Control.stopDone(error_t err) {}
+	event void Control.startDone(error_t err) {
+		call Flash.erase(FALSE);
+		call Leds.led2On();
+	}
+	
+	event void Control.stopDone(error_t err) {}
 	
 	// Flash Events
 
 	event void Flash.writeDone(error_t result){
-//		call Leds.led1Toggle();
-//			sendStatusMessage(TRANSFER_OK);
-//			if(sendIndex == maxChunks) {
-//				signal TestSerialI.transferDone();
-//			}
+		//printf("Write Done TestSerialC");
+		
+		call Leds.led1Toggle();
+			sendStatusMessage(TRANSFER_OK);
+			if(sendIndex == maxChunks) {
+				signal TestSerialI.transferDone();
+			}
 	}
 
 	event void Flash.readDone(error_t result)
 	{
+		//printf("Read Done TestSerialC");
 		sendChunkMessage(sendArray);
 	}
 
 	event void Flash.eraseDone(error_t result)
 	{
-		sendStatusMessage(TRANSFER_READY);
+		//sendStatusMessage(TRANSFER_READY);
 	}
-
+	
+	event void Flash.writeLengthDone(error_t result){
+		//do nothing
+	}
+	
+	event void Flash.readLengthDone(error_t result){
+		//do nothing
+	}
+	
+	event void Flash.eraseDoneFromSender(error_t result) {
+		//do nothing
+	}
+	
 
 	command error_t TestSerialI.start(){
 		call Control.start();		
 		return SUCCESS;
 	}
 }
-
-

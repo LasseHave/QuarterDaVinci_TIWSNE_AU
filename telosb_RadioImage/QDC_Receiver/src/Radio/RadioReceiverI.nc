@@ -5,6 +5,7 @@
 interface RadioReceiverI
 {
 	command error_t start();
+	command void readyForNextPart();
 	event void packageReceived(uint16_t byteCounter);
 	event uint8_t * getPictureBuffer();
 }

@@ -204,7 +204,7 @@ public class TestSerial implements MessageListener {
 			}
 		}
 		
-		if(args[1].equals("r"))
+		if(args.length > 1 && args[1].equals("r"))
     	{
 			System.out.println("Requesting Data");
 			status.set_status(TRANSFER_FROM_TELOS);

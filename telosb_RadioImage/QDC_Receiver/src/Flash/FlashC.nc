@@ -14,8 +14,12 @@ module FlashC
 }
 implementation
 {		
-	command error_t Flash.erase()
-	{
+	bool withLength = FALSE;
+	bool fromSender = FALSE;
+	
+	command error_t Flash.erase(bool sender)
+	{	
+		fromSender = sender;
 		return call BlockWrite.erase();
 	}
 	
@@ -27,7 +31,9 @@ implementation
 	
 	command error_t Flash.writeLength(uint8_t* uint8Array, uint32_t from, uint16_t len)
 	{
-		error_t Status = call BlockWrite.write(from,uint8Array,len);
+		error_t Status;
+		withLength = TRUE;
+		Status = call BlockWrite.write(from,uint8Array,len);
 		return Status;
 	}
 	
@@ -39,13 +45,20 @@ implementation
 	
 	command error_t Flash.readLength(uint8_t* uint8Array, uint32_t from, uint16_t len)
 	{
-		error_t Status = call BlockRead.read(from,uint8Array,len);
+		error_t Status;
+		withLength = TRUE;
+		Status = call BlockRead.read(from,uint8Array,len);
 		return Status;
 	}
 	
 	event void BlockWrite.eraseDone(error_t result) 
 	{
-		signal Flash.eraseDone(result);
+		if(fromSender){
+			fromSender = FALSE;
+			signal Flash.eraseDoneFromSender(result);
+		} else {
+			signal Flash.eraseDone(result);
+		}
 	}
 	
 	event void BlockWrite.writeDone(storage_addr_t x, void* buf, storage_len_t y, error_t result) 
@@ -55,12 +68,24 @@ implementation
 
 	event void BlockWrite.syncDone(error_t result) 
 	{
-		signal Flash.writeDone(result);
+		if(withLength) {
+			withLength = FALSE;
+			signal Flash.writeLengthDone(result);
+		} else {
+			signal Flash.writeDone(result);
+		}
+		
 	}
 
 	event void BlockRead.readDone(storage_addr_t x, void* buf, storage_len_t rlen, error_t result) __attribute__((noinline))
 	{
-		signal Flash.readDone(result);
+		if(withLength) {
+			withLength = FALSE;
+			signal Flash.readLengthDone(result);
+		} else {
+			signal Flash.readDone(result);
+		}
+		
 	}
 
 	event void BlockRead.computeCrcDone(storage_addr_t x, storage_len_t y, uint16_t z, error_t result) 
