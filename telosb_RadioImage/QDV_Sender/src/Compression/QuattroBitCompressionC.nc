@@ -2,7 +2,7 @@
 
 #define LENGTH 1024
 
-module FourBitCompressionC{
+module QuattroBitCompressionC{
 	provides interface CompressionI; 
  
 }
@@ -24,3 +24,17 @@ implementation{
 	    return (uint16_t)destination; //Is this right?
 	} 
 }
+
+/* Usage
+
+		unsigned char compressed[LENGTH/2];
+		unsigned char decompressed[LENGTH];
+
+		uint16_t i;
+		
+		for(i = 0 ; i < LENGTH; i++)
+			decompressed[i] = i%255;
+		
+		compress(decompressed, compressed);
+
+*/ 
