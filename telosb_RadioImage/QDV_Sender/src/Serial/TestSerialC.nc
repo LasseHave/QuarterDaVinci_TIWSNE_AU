@@ -47,9 +47,10 @@ implementation {
 	void sendChunkMessage(uint8_t* source )
 	{
 		chunk_msg_t* chunkMsg = (chunk_msg_t*) call Packet.getPayload(&chunk_pkt, sizeof(chunk_msg_t));
-		memcpy(chunkMsg->chunk, source, 64);
 	
+		memcpy(chunkMsg->chunk, source, 64);
 		chunkMsg->chunkNum = sendIndex;
+	
 		call PacketAck.noAck(&chunk_pkt);
 	
 		if (call SendData.send(AM_BROADCAST_ADDR, &chunk_pkt, sizeof(chunk_msg_t)) == SUCCESS)
@@ -58,61 +59,35 @@ implementation {
 		}
 	}
 	
-	event message_t* ReceiveStatus.receive(message_t* bufPtr, 
-			void* payload, uint8_t len) 
+	event message_t* ReceiveStatus.receive(message_t* bufPtr, void* payload, uint8_t len) 
 	{
-		if (len != sizeof(status_msg_t)) 
-		{
+		if (len != sizeof(status_msg_t)) {
 			return bufPtr;
-		}
-		else
-		{
+		}else{
 			status_msg_t* statusMsg = (status_msg_t*)payload;
-			//call Leds.led1Toggle();
+	
 			if(statusMsg->status == TRANSFER_TO_TELOS)
 			{
 				// getting Image from PC
 				// Delete Flash content
 				sendIndex = 0;
-				call Flash.erase(FALSE);
-			}
-			else if (statusMsg->status == TRANSFER_OK)
-			{
-				// transfer was okay
-			}
-			else if (statusMsg->status == TRANSFER_DONE)
-			{
-				//Full transfer complete
-				
-			}
-			else if(statusMsg->status == TRANSFER_FAIL)
-			{
-				// TODO
-			}
-			else if(statusMsg->status == TRANSFER_READY)
-			{
-	
-			}
-			else if(statusMsg->status == TRANSFER_FROM_TELOS)
+				call Flash.erase();
+			} else if(statusMsg->status == TRANSFER_FROM_TELOS)
 			{
 				//Start remote transfer (to PC)
 				sendIndex = 0;
 				call Flash.read(sendArray, sendIndex);	
 			}
-			else
-			{
-				// nothing
-			}
+	
 			return bufPtr;
 		}
 	}
 
 	event void SendStatus.sendDone(message_t* bufPtr, error_t error) {
-			// TODO
+		
 	}
 
-	event message_t* ReceiveData.receive(message_t* bufPtr, 
-				void* payload, uint8_t len) {
+	event message_t* ReceiveData.receive(message_t* bufPtr, void* payload, uint8_t len) {
 		if (len != sizeof(chunk_msg_t)) 
 		{
 			call Leds.led0Toggle();
@@ -121,22 +96,15 @@ implementation {
 		else
 		{
 			chunk_msg_t* data = (chunk_msg_t*)payload;
-//			if(sendIndex < 128) {			//why readflashlenght/write works
-//				int i;				
-//				for(i = 0; i < 128; i++) {
-//					data->chunk[i] = i;
-//				}
-//			}								//why readflashlenght/write works
-			
 			call Flash.write(data->chunk, data->chunkNum);
 			sendIndex++;
-				
+	
 			return bufPtr;
 		}
 	}
 
 	event void SendData.sendDone(message_t* bufPtr, error_t error) {
-			if (&chunk_pkt == bufPtr)
+		if (&chunk_pkt == bufPtr)
 		{
 			sendIndex++;
 	
@@ -146,10 +114,9 @@ implementation {
 			}
 			else
 			{
-				
 				sendStatusMessage(TRANSFER_DONE);
 			}
-			
+	
 		}
 	
 	}
@@ -161,15 +128,15 @@ implementation {
 	event void Control.stopDone(error_t err) {}
 	
 	// Flash Events
-
 	event void Flash.writeDone(error_t result){
 		//printf("Write Done TestSerialC");
-		
 		call Leds.led1Toggle();
-			sendStatusMessage(TRANSFER_OK);
-			if(sendIndex == maxChunks) {
-				signal TestSerialI.transferDone();
-			}
+		
+		sendStatusMessage(TRANSFER_OK);
+		
+		if(sendIndex == maxChunks) {
+			signal TestSerialI.transferDone();
+		}
 	}
 
 	event void Flash.readDone(error_t result)
@@ -195,7 +162,6 @@ implementation {
 		//do nothing
 	}
 	
-
 	command error_t TestSerialI.start(){
 		call Control.start();		
 		return SUCCESS;
