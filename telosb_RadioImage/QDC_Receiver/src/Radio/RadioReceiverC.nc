@@ -46,16 +46,7 @@ implementation{
 	event void AMControl.stopDone(error_t err) {
 	}
 	
-	event void AMSend.sendDone(message_t *msg, error_t error){
-		// If all packages in picture part received:
-//		if(packageCounter >= totalPackagesInPart) {
-//			printf("I'm alive ");
-//			printfflush();
-//			byteCounter = 0;
-//			packageCounter = 0;
-//			signal RadioReceiverI.packageReceived(byteCounter);
-//		}
-	}
+	event void AMSend.sendDone(message_t *msg, error_t error){}
 	
 	task void sendPictureParkAck() {
 		AckMsg * btrpkt = (AckMsg * )(call Packet.getPayload(&pkt,sizeof(AckMsg)));

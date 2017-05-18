@@ -63,23 +63,6 @@ implementation {
 	event void Flash.eraseDone(error_t result){
 		// TODO Auto-generated method stub
 	}
-
-
-//	event void TestSerial.transferDone(){
-//		// TODO Auto-generated method stub
-//		call Leds.led0Toggle();
-//
-//	}
-//
-//	event void Flash.writeDone(error_t result){
-//		// TODO Auto-generated method stub
-//		call Leds.led0Toggle();
-//		storePicturePartReceivedIntoFlash();
-//	}
-//
-//	event void Flash.readDone(error_t result){
-//		// TODO Auto-generated method stub
-//	}
 	
 		event void TestSerial.transferDone(){
 		// TODO Auto-generated method stub
@@ -91,12 +74,7 @@ implementation {
 
 	event void Flash.readDone(error_t result){}
 	
-	event void Flash.eraseDoneFromSender(error_t result) {
-//		call Leds.led0On();
-//		call Flash.writeLength(pictureData, 0, PICTURE_PART_SIZE);
-//		
-		//do nothing
-	}
+	event void Flash.eraseDoneFromSender(error_t result) {}
 	
 	event void Flash.readLengthDone(error_t result) {
 		printf("AFTER READ DONE");

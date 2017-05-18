@@ -76,23 +76,6 @@ implementation {
 				sendIndex = 0;
 				call Flash.erase(FALSE);
 			}
-			else if (statusMsg->status == TRANSFER_OK)
-			{
-				// transfer was okay
-			}
-			else if (statusMsg->status == TRANSFER_DONE)
-			{
-				//Full transfer complete
-				
-			}
-			else if(statusMsg->status == TRANSFER_FAIL)
-			{
-				// TODO
-			}
-			else if(statusMsg->status == TRANSFER_READY)
-			{
-	
-			}
 			else if(statusMsg->status == TRANSFER_FROM_TELOS)
 			{
 				//Start remote transfer (to PC)
@@ -108,11 +91,10 @@ implementation {
 	}
 
 	event void SendStatus.sendDone(message_t* bufPtr, error_t error) {
-			// TODO
+			
 	}
 
-	event message_t* ReceiveData.receive(message_t* bufPtr, 
-				void* payload, uint8_t len) {
+	event message_t* ReceiveData.receive(message_t* bufPtr, void* payload, uint8_t len) {
 		if (len != sizeof(chunk_msg_t)) 
 		{
 			call Leds.led0Toggle();
@@ -139,7 +121,6 @@ implementation {
 			}
 			else
 			{
-				
 				sendStatusMessage(TRANSFER_DONE);
 			}
 			
@@ -158,7 +139,6 @@ implementation {
 
 	event void Flash.writeDone(error_t result){
 		//printf("Write Done TestSerialC");
-		
 		call Leds.led1Toggle();
 			sendStatusMessage(TRANSFER_OK);
 			if(sendIndex == maxChunks) {
@@ -174,7 +154,7 @@ implementation {
 
 	event void Flash.eraseDone(error_t result)
 	{
-		//sendStatusMessage(TRANSFER_READY);
+		//do nothing
 	}
 	
 	event void Flash.writeLengthDone(error_t result){
