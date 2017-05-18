@@ -1,4 +1,5 @@
-#include "Compression.h"
+//#include "Compression.h"
+#include "RadioSender.h"
 
 
 module NoCompressionC{
@@ -8,7 +9,7 @@ module NoCompressionC{
 implementation{
 	
 	command uint16_t CompressionI.compress(uint8_t *source, uint8_t *destination){
-		memcpy(destination,source, BLOCK_LENGTH);
-		return BLOCK_LENGTH;
+		memcpy(destination,source, PICTURE_PART_SIZE);
+		return PICTURE_PART_SIZE;
 	}
 }

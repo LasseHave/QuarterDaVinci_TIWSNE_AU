@@ -20,18 +20,16 @@ implementation {
 	components new AMSenderC(AM_SENDER);
 	components new AMReceiverC(AM_RECEIVER);
 	components new TimerMilliC() as AckTimer;
-
+	
+	components new TimerMilliC() as ButtonTimer;
+	components NoCompressionC as Compression;
+	
 	components PrintfC;
 	
 	components TestSerialC as TestSerial;
 	components SerialActiveMessageC as AM;
 	components FlashC;
 	components new BlockStorageC(BLOCK_VOLUME);
-
-
-	//Block storage
-
-	// Serial
 
 	//RadioSender
 	RadioSender.Packet->AMSenderC;
@@ -41,15 +39,13 @@ implementation {
 	RadioSender.Receive -> AMReceiverC;
 	RadioSender.AckTimer -> AckTimer;
 	
-	//FLASH
-	//App.Flash -> FlashC;
-	//FlashC.BlockRead -> BlockStorageC.BlockRead;
-	//FlashC.BlockWrite -> BlockStorageC.BlockWrite;
-	
 	App.Boot->MainC;
 	App.Leds->LedsC;
 	App.RadioSender->RadioSenderC;
-	App.Flash -> FlashC;
+	App.Flash->FlashC;
+	App.ButtonTimer->ButtonTimer;
+	App.Compression->Compression;
+	
 	
 	//SERIAL
 	TestSerial.Control -> AM;

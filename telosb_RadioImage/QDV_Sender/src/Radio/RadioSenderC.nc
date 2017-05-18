@@ -43,10 +43,10 @@ implementation{
 	/*
 	 * Method to calculate number of packages to be sent
 	 */
-	void calculateTotalNumberOfPackagesInPart() {
-		totalPackages = (PICTURE_PART_SIZE / DATA_SIZE);
+	void calculateTotalNumberOfPackagesInPart(uint16_t numberOfBytes) {
+		totalPackages = (numberOfBytes / DATA_SIZE);
 		// add one more package if there is something left after the division
-		if((PICTURE_PART_SIZE % DATA_SIZE) != 0) {
+		if((numberOfBytes % DATA_SIZE) != 0) {
 			totalPackages++;
 		}
 	}
@@ -66,10 +66,10 @@ implementation{
 		}
 	}
 
-	command error_t RadioSenderI.send(uint8_t *data){
+	command error_t RadioSenderI.send(uint8_t *data, uint16_t numberOfBytes){
 		if( ! busy) {
 			if(sentBytes == 0) { // initial call
-				calculateTotalNumberOfPackagesInPart();
+				calculateTotalNumberOfPackagesInPart(numberOfBytes);
 				packageCounter = 0;
 				dataPtr = data;
 				createSinglePackage(0, DATA_SIZE);
@@ -91,7 +91,7 @@ implementation{
 
 	// If we haven't receivedacknowledgment within 5 second we try to retransmitt'
 	event void AMSend.sendDone(message_t * msg, error_t error) {
-			call AckTimer.startOneShot(5000);
+			call AckTimer.startOneShot(500);
 	}
 
 	event message_t * Receive.receive(message_t *msg, void *payload, uint8_t len){
