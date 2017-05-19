@@ -22,7 +22,7 @@ implementation {
 	components new TimerMilliC() as AckTimer;
 	
 	components new TimerMilliC() as ButtonTimer;
-	components NoCompressionC as Compression;
+	components QuattroBitCompressionC as Compression;
 	
 	components PrintfC;
 	

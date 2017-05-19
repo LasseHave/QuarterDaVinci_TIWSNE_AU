@@ -1,5 +1,5 @@
 interface CompressionI{
-	command uint16_t compress(uint8_t* source, uint8_t* destination);
+	command uint16_t compress(uint8_t* source, uint8_t* destination, uint16_t);
 }
 
 

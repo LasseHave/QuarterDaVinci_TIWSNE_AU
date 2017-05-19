@@ -62,6 +62,8 @@ public class TestSerial implements MessageListener {
 
 	public static statusMsg status = new statusMsg();
 	public static chunkMsg payload = new chunkMsg();
+	
+	public static boolean compressionEnabled = false;
 
 
 	public TestSerial(MoteIF moteIF) {
@@ -125,7 +127,7 @@ public class TestSerial implements MessageListener {
 			{
 				System.out.println("Transfer is done. Reconstructing...");
 				// reconstruct image
-				File file = new File("clock.tiff");
+				File file = new File("clock.bmp");
 				byte[] recData = new byte[(int) file.length()];
 				int cnt1 = 0;
 				int cnt2 = 0;
@@ -136,21 +138,24 @@ public class TestSerial implements MessageListener {
 				{
 					for(cnt2 = 0; cnt2 < 64; cnt2++)
 					{
-
 						recData[cnt3] = (byte)data[cnt1][cnt2];
 						cnt3++;
 					}
 					System.out.println("Do i actually do something???..." + cnt2);
-
+					
+					/*if(compressionEnabled) {
+						recData = decompress(recData);
+					}*/
 				}
 				try{
 					System.out.println("Do i get to the try?...");
 
-					FileOutputStream out = new FileOutputStream("/home/tinyos/Downloads/reimage.tiff"); //tiff'
+					FileOutputStream out = new FileOutputStream("/home/tinyos/Downloads/reimage.bmp"); //tiff'
 					//Make sure you have write access to the folder
 					try{
 						
-						out.write(recData);
+						//out.write(recData);
+						out.write((compressionEnabled ? decompress(recData, file) : recData));
 						out.flush();
 						out.close();
 						System.out.println("Image reconstruction completed");
@@ -167,7 +172,41 @@ public class TestSerial implements MessageListener {
 			System.out.println("unknown message");
 		}
 	}
-
+	
+	public static byte[] testDecompress(byte[] recData, File file) {
+		byte[] result = new byte[(int)file.length()];
+		
+		for(int i = 0; i < (int)file.length(); i++) {
+			if(i < 54) {
+				result[i] = (byte)recData[i];
+			} else {
+				result[i] = (byte)(recData[i] & (byte)240);
+			}
+		}
+		return result;
+	}
+	
+	public static byte[] decompress(byte[] recData, File file) {
+		byte[] result = new byte[(int)file.length()];
+		
+		/*for(int i = 0; i < file.length(); i++) {
+			result[i] = recData[i];
+		}*/
+		byte headerLength = 30;
+		for(int i = 0; i < headerLength; i++) { //bmp header
+			result[i] = recData[i];
+		}
+		
+		int j = headerLength;
+		for(int i = headerLength; i < (int)file.length(); i=(i+2)) { 
+				result[i] = (byte)(recData[j] & 0xF0);
+				result[i+1] = (byte) (recData[j] << 4);
+				j++;
+		}
+		
+		return result;
+	}
+	
 	public static void main(String[] args) throws Exception {
 		String source = null;
 		//RandomAccessFile f = new RandomAccessFile("image.bin", "r");
@@ -185,7 +224,7 @@ public class TestSerial implements MessageListener {
 		TestSerial serial = new TestSerial(mif);
 		currentChunk = 0;
 
-		File file = new File("clock.tiff");
+		File file = new File("clock.bmp");
 		byte[] fileData = new byte[(int) file.length()];
 		DataInputStream dis = new DataInputStream(new FileInputStream(file));
 		dis.readFully(fileData);
@@ -202,6 +241,10 @@ public class TestSerial implements MessageListener {
 				data[cnt1][cnt2] = (short)fileData[cnt3];
 				cnt3++;
 			}
+		}
+		
+		if(args.length > 2 && args[2].equals("c")) {
+			compressionEnabled = true;
 		}
 		
 		if(args.length > 1 && args[1].equals("r"))

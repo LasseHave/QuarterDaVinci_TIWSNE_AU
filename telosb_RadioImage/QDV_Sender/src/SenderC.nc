@@ -21,7 +21,7 @@ implementation {
 	uint8_t pictureDataPart = 0;
 	
 	bool buttonReleased = TRUE;
-	bool compression = FALSE;
+	bool compression = TRUE;
 	
 	void setDummyPictureData(uint8_t add) {
 		uint16_t i;
@@ -105,7 +105,17 @@ implementation {
 	event void Flash.readLengthDone(error_t result) {
 		uint16_t numberOfBytes = PICTURE_PART_SIZE;
 		if(compression) {
-			numberOfBytes = call Compression.compress(temp, pictureData);
+			if(pictureDataPart == 1) { //If first part: we don't compress bmp header
+				const uint8_t headerLength = 30;
+				uint8_t i;
+				for(i = 0; i < headerLength; i++) {
+					pictureData[i] = temp[i];
+				}
+				numberOfBytes = headerLength; //bmp header
+				numberOfBytes += call Compression.compress(&temp[headerLength], &pictureData[headerLength], (PICTURE_PART_SIZE-headerLength));
+			} else {
+				numberOfBytes = call Compression.compress(temp, pictureData, PICTURE_PART_SIZE);
+			}
 		}
 		call RadioSender.send(pictureData, numberOfBytes);
 	}

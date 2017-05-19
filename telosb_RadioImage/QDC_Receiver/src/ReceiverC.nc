@@ -13,7 +13,9 @@ module ReceiverC {
 }
 implementation {	
 	uint8_t pictureData[PICTURE_PART_SIZE]; 
+	uint8_t decompressedPictureData[PICTURE_PART_SIZE]; 
 	uint8_t pictureDataPartsReceived = 0;
+	bool compressionEnabled = TRUE;
 	
 	event void Boot.booted() {
 		call TestSerial.start();
@@ -33,9 +35,12 @@ implementation {
 	}
 	
 	void storePicturePartReceivedIntoFlash() {
-		if (pictureDataPartsReceived < PICTURE_PART_NR ) { // PICTURE_PART_NR
-			call Flash.writeLength(pictureData,pictureDataPartsReceived * PICTURE_PART_SIZE, PICTURE_PART_SIZE);
-	
+		if (pictureDataPartsReceived < PICTURE_PART_NR ) { 
+			if(compressionEnabled) {
+				call Flash.writeLength(pictureData,pictureDataPartsReceived * (PICTURE_PART_SIZE/2), (PICTURE_PART_SIZE/2));
+			} else {
+				call Flash.writeLength(pictureData,pictureDataPartsReceived * PICTURE_PART_SIZE, PICTURE_PART_SIZE);
+			}
 		}
 	}
 	
