@@ -10,6 +10,7 @@ module RadioSenderC{
     uses interface Receive;
     uses interface SplitControl as AMControl;
     uses interface Timer<TMilli> as AckTimer;
+    uses interface Leds;
     
 }
 implementation{
@@ -25,9 +26,15 @@ implementation{
 		call AMControl.start();
 		return SUCCESS;
 	}
+		
+	command error_t RadioSenderI.stop() {
+		call AMControl.stop();
+		return SUCCESS;
+	}
 	
 	event void AMControl.startDone(error_t err) {
 		if(err == SUCCESS) {
+			call Leds.led0On();
 			signal RadioSenderI.startDone();
 		}
 		else {
@@ -36,6 +43,7 @@ implementation{
 	}
 
 	event void AMControl.stopDone(error_t err) {
+		call Leds.led0Off();
 		printf("stopDone");
 		printfflush();
 	}

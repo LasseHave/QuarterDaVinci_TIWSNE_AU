@@ -38,6 +38,7 @@ implementation {
 	RadioSender.AMControl->ActiveMessageC;
 	RadioSender.Receive -> AMReceiverC;
 	RadioSender.AckTimer -> AckTimer;
+	RadioSender.Leds->LedsC;
 	
 	App.Boot->MainC;
 	App.Leds->LedsC;
