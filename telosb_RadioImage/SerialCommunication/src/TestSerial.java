@@ -88,7 +88,7 @@ public class TestSerial implements MessageListener {
 			if ((msg.get_status() == TRANSFER_OK) ||(msg.get_status() == TRANSFER_READY))
 			{
 				if(currentChunk < 1024){
-					printLoading(currentChunk, true); //Newly added
+					printLoading(currentChunk, true); 
 					payload.set_chunk(data[currentChunk]);
 					payload.set_chunkNum(currentChunk);
 					currentChunk++;
