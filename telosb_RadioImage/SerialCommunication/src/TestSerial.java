@@ -80,17 +80,15 @@ public class TestSerial implements MessageListener {
 			currentChunk = msg.get_chunkNum();
 			data[currentChunk] = buf;
 			//Loading bar
-			System.out.println("Received chunk:" + currentChunk);
-			//currentChunk++;
+			printLoading(currentChunk, false);
 		}
 		else if(message.amType() == statusMsg.AM_TYPE)
 		{
 			statusMsg msg = (statusMsg)message;
 			if ((msg.get_status() == TRANSFER_OK) ||(msg.get_status() == TRANSFER_READY))
 			{
-				System.out.println("Got OK");
 				if(currentChunk < 1024){
-					printLoading(currentChunk); //Newly added
+					printLoading(currentChunk, true); //Newly added
 					payload.set_chunk(data[currentChunk]);
 					payload.set_chunkNum(currentChunk);
 					currentChunk++;
@@ -118,14 +116,12 @@ public class TestSerial implements MessageListener {
 			}
 			else if (msg.get_status() == TRANSFER_DONE)
 			{
-				System.out.println("Transfer is done. Reconstructing...");
 				// reconstruct image
 				File file = new File("clock.bmp");
 				byte[] recData = new byte[(int) file.length()];
 				int cnt1 = 0;
 				int cnt2 = 0;
 				int cnt3 = 0;
-				System.out.println("Transfer is done. Reconstructing...");
 
 				for (cnt1 = 0; cnt1 < 1024; cnt1++)
 				{
@@ -134,15 +130,8 @@ public class TestSerial implements MessageListener {
 						recData[cnt3] = (byte)data[cnt1][cnt2];
 						cnt3++;
 					}
-					System.out.println("Do i actually do something???..." + cnt2);
-					
-					/*if(compressionEnabled) {
-						recData = decompress(recData);
-					}*/
 				}
 				try{
-					System.out.println("Do i get to the try?...");
-
 					FileOutputStream out = new FileOutputStream("/home/tinyos/Downloads/reimage.bmp"); //tiff'
 					//Make sure you have write access to the folder
 					try{
@@ -151,7 +140,7 @@ public class TestSerial implements MessageListener {
 						out.write((compressionEnabled ? decompress(recData, file) : recData));
 						out.flush();
 						out.close();
-						System.out.println("Image reconstruction completed");
+						System.out.println("Image Received!");
 						System.exit(0);
 					}
 					catch(IOException exception){}
@@ -179,25 +168,28 @@ public class TestSerial implements MessageListener {
 		return result;
 	}
 
-	public static void printLoading(int currentChunk){
+	public static void printLoading(int currentChunk, boolean sending){
+		System.out.print("\033[H\033[2J");  // clear console
+		System.out.flush();
 		
-		String bar = "[--------------------------------]";
-		String newBar = "";
-		int totalChunksLoad = 1024;
+		String bar = "--------------------------------";
+		char[] barChars = bar.toCharArray();
+
+		double totalChunksLoad = 1024;
 		double percentSent = currentChunk / totalChunksLoad * 100;
-
-		int nearest = (int) Math.round(percentSent * 1024);
-
-		for(int i = 0; i < nearest; i++) {
-			if(i == 0) {
-				//Do Nothing
-			} else {
-				newBar = bar.substring(0,i)+ 'x'+ bar.substring(i);
-			}
-		}
-
-		System.out.println(newBar);
 		
+		int nearest = (int) Math.round(((double)barChars.length/100)*percentSent);
+		for(int i = 0; i < nearest; i++) {
+			barChars[i] = 'x';
+		}
+		String toPrint = String.valueOf(barChars);
+		String direction = "Receiving from mote";
+		
+		if(sending) {
+			direction = "Sending to mote";
+		}
+		System.out.println(direction + " " + Math.round(percentSent) + "%");
+		System.out.println("[" + toPrint + "] \r");
 	}
 	
 	public static byte[] decompress(byte[] recData, File file) {
