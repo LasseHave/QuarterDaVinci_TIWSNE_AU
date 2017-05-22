@@ -79,6 +79,7 @@ public class TestSerial implements MessageListener {
 			short[] buf = msg.get_chunk();
 			currentChunk = msg.get_chunkNum();
 			data[currentChunk] = buf;
+			//Loading bar
 			System.out.println("Received chunk:" + currentChunk);
 			//currentChunk++;
 		}
@@ -89,7 +90,7 @@ public class TestSerial implements MessageListener {
 			{
 				System.out.println("Got OK");
 				if(currentChunk < 1024){
-					System.out.println("Sending packet " + currentChunk);
+					printLoading(currentChunk); //Newly added
 					payload.set_chunk(data[currentChunk]);
 					payload.set_chunkNum(currentChunk);
 					currentChunk++;
@@ -112,14 +113,6 @@ public class TestSerial implements MessageListener {
 					}
 					catch (IOException exception){}
 					System.exit(0);
-					//try {Thread.sleep(1000);}
-					//catch (InterruptedException exception) {}
-					//status.set_status(TRANSFER_FROM_TELOS);
-					//
-					//	moteIF.send(0, status);
-					//	System.out.println("Requesting Data");
-					//}
-					//catch (IOException exception){}
 				}
 
 			}
@@ -184,6 +177,27 @@ public class TestSerial implements MessageListener {
 			}
 		}
 		return result;
+	}
+
+	public static void printLoading(int currentChunk){
+		
+		String bar = "[--------------------------------]";
+		String newBar = "";
+		int totalChunksLoad = 1024;
+		double percentSent = currentChunk / totalChunksLoad * 100;
+
+		int nearest = (int) Math.round(percentSent * 1024);
+
+		for(int i = 0; i < nearest; i++) {
+			if(i == 0) {
+				//Do Nothing
+			} else {
+				newBar = bar.substring(0,i)+ 'x'+ bar.substring(i);
+			}
+		}
+
+		System.out.println(newBar);
+		
 	}
 	
 	public static byte[] decompress(byte[] recData, File file) {
