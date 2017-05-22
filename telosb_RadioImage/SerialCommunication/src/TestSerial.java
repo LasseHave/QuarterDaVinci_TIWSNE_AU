@@ -182,7 +182,8 @@ public class TestSerial implements MessageListener {
 	public static void printLoading(int currentChunk){
 		
 		String bar = "[--------------------------------]";
-		String newBar = "";
+		char[] barChars = myName.toCharArray();
+
 		int totalChunksLoad = 1024;
 		double percentSent = currentChunk / totalChunksLoad * 100;
 
@@ -192,11 +193,12 @@ public class TestSerial implements MessageListener {
 			if(i == 0) {
 				//Do Nothing
 			} else {
-				newBar = bar.substring(0,i)+ 'x'+ bar.substring(i);
+				barChars[i] = 'x';
 			}
 		}
+		toPrint = String.valueOf(barChars);
 
-		System.out.println(newBar);
+		System.out.println(toPrint);
 		
 	}
 	
