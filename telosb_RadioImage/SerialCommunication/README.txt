@@ -3,6 +3,7 @@ Author/Contact: tinyos-help@millennium.berkeley.edu
 
 Description:
 
+Built from original TestSerial.
 TestSerial is a simple application that may be used to test that the
 TinyOS java toolchain can communicate with a mote over the serial
 port. The java application sends packets to the serial port at 1Hz:
@@ -14,17 +15,15 @@ to the serial port at 1Hz. Upon reception of a packet, the java
 application prints the counter's value to standard out.
 
 Java Application Usage:
-  java TestSerial [-comm <packetsource>]
+  
+  $ cd to this folder
 
-  If not specified, the <packetsource> defaults to sf@localhost:9002 or
-  to your MOTECOM environment variable (if defined).
+  $ java TestSerial [source] <r> <c>
 
-Python Usage:
-  tos-dump /dev/ttyUSB0 57600
+  Source is written as: serial@/dev/ttyUSB0:telosb, or whatever port is used.
 
-Tools:
+  <r> Receive from telosB flash
+  <c> If c is passed, the transmission will be compressed.
 
-Known bugs/limitations:
-
-None.
-
+  If changes made in java, call:
+  $ javac TestSerial.Java
