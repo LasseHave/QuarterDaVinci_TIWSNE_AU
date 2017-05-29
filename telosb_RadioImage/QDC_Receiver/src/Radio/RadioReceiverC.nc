@@ -77,7 +77,7 @@ implementation{
 				lastReceivedPackage = btrpkt->nodeid;
 				if(btrpkt->nodeid < btrpkt->total_package_nr_in_part-1) {
 					memcpy(&pictureBuffer[(btrpkt->nodeid)*DATA_SIZE], btrpkt->data, DATA_SIZE); // it copies the set of data into a proper memory address
-					//call Leds.led0Toggle();
+					call Leds.led0Toggle();
 				} else {
 					memcpy(&pictureBuffer[byteCounter], btrpkt->data, (PICTURE_PART_SIZE-byteCounter)); // put it into the last memory position
 				}

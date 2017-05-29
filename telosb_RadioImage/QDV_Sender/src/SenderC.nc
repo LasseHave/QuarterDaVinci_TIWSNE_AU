@@ -52,13 +52,13 @@ implementation {
 	
 	event void Boot.booted() {
 		call Notify.enable();
-		//call TestSerial.start();
+		call TestSerial.start();
 	}	
 
 
 	event void RadioSender.startDone(){
 		//call Notify.enable();
-		//call Leds.led1On();
+		call Leds.led1On();
 		loadNextPartOfPicture();
 	}
 	
@@ -99,7 +99,7 @@ implementation {
 
 	event void TestSerial.transferDone(){
 		// TODO Auto-generated method stub
-		//call Leds.led1On();
+		call Leds.led1On();
 
 	}
 	

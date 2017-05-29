@@ -18,7 +18,7 @@ implementation {
 	bool compressionEnabled = TRUE;
 	
 	event void Boot.booted() {
-		//call TestSerial.start();
+		call TestSerial.start();
 		call RadioStartTimer.startOneShot(3000);
 		//call RadioReceiver.start();
 	}
@@ -46,7 +46,7 @@ implementation {
 	}
 	
 	event void RadioReceiver.packageReceived(uint16_t packageId) {
-		//call Leds.led1Toggle();
+		call Leds.led1Toggle();
 		storePicturePartReceivedIntoFlash();
 	}
 	
