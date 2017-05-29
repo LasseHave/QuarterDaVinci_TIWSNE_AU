@@ -21,6 +21,8 @@ implementation {
 	components new AMReceiverC(AM_RECEIVER);
 	components new TimerMilliC() as AckTimer;
 	
+	components new TimerMilliC() as RadioStartTimer;
+	
 	components PrintfC;
 	
 	components TestSerialC as TestSerial;
@@ -43,6 +45,7 @@ implementation {
 	App.Leds->LedsC;
 	App.TestSerial->TestSerial;
 	App.Flash -> FlashC;
+	App.RadioStartTimer -> RadioStartTimer;
 	
 		//SERIAL
 	TestSerial.Control -> AM;

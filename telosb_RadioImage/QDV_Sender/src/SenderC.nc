@@ -44,20 +44,21 @@ implementation {
 			pictureDataPart++;
 		} else {
 			//Transmission done
-			call Leds.set(7);
+			//call Leds.set(7);
+			call RadioSender.stop();
 		}
 	}
 	
 	
 	event void Boot.booted() {
 		call Notify.enable();
-		call TestSerial.start();
+		//call TestSerial.start();
 	}	
 
 
 	event void RadioSender.startDone(){
 		//call Notify.enable();
-		call Leds.led1On();
+		//call Leds.led1On();
 		loadNextPartOfPicture();
 	}
 	
@@ -87,7 +88,7 @@ implementation {
 			compression = TRUE;
 		}
 		call RadioSender.start();
-		call Leds.set(0);
+		//call Leds.set(0);
 	}																																																																					
 
 	event void Flash.eraseDone(error_t result){
@@ -98,7 +99,7 @@ implementation {
 
 	event void TestSerial.transferDone(){
 		// TODO Auto-generated method stub
-		call Leds.led1On();
+		//call Leds.led1On();
 
 	}
 	

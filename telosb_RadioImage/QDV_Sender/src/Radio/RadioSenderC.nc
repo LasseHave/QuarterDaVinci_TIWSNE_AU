@@ -34,7 +34,7 @@ implementation{
 	
 	event void AMControl.startDone(error_t err) {
 		if(err == SUCCESS) {
-			call Leds.led0On();
+			//call Leds.led0On();
 			signal RadioSenderI.startDone();
 		}
 		else {
@@ -43,7 +43,7 @@ implementation{
 	}
 
 	event void AMControl.stopDone(error_t err) {
-		call Leds.led0Off();
+		//call Leds.led0Off();
 		printf("stopDone");
 		printfflush();
 	}
