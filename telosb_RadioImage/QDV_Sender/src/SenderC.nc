@@ -44,7 +44,8 @@ implementation {
 			pictureDataPart++;
 		} else {
 			//Transmission done
-			call Leds.set(7);
+			//call Leds.set(7);
+			call RadioSender.stop();
 		}
 	}
 	
@@ -87,7 +88,7 @@ implementation {
 			compression = TRUE;
 		}
 		call RadioSender.start();
-		call Leds.set(0);
+		//call Leds.set(0);
 	}																																																																					
 
 	event void Flash.eraseDone(error_t result){

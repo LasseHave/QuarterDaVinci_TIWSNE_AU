@@ -8,7 +8,7 @@ module ReceiverC {
 	uses interface Leds;
 	uses interface TestSerialI as TestSerial;
 	uses interface Flash;
-	
+	uses interface Timer<TMilli> as RadioStartTimer;
 	uses interface RadioReceiverI as RadioReceiver;
 }
 implementation {	
@@ -19,7 +19,8 @@ implementation {
 	
 	event void Boot.booted() {
 		call TestSerial.start();
-		call RadioReceiver.start();
+		call RadioStartTimer.startOneShot(3000);
+		//call RadioReceiver.start();
 	}
 	
 	void setDummyPictureData(uint8_t add) {
@@ -52,7 +53,8 @@ implementation {
 	event void Flash.writeLengthDone(error_t result) {
 		pictureDataPartsReceived++;
 		if(pictureDataPartsReceived == PICTURE_PART_NR) {
-			call Leds.set(0);
+			call RadioReceiver.stop();
+			//call Leds.set(0);
 		}		
 		call RadioReceiver.readyForNextPart();
 	}
@@ -69,4 +71,9 @@ implementation {
 	event void Flash.eraseDoneFromSender(error_t result) {}
 	
 	event void Flash.readLengthDone(error_t result) {}
+
+	event void RadioStartTimer.fired(){
+		// TODO Auto-generated method stub
+		call RadioReceiver.start();
+	}
 }

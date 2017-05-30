@@ -90,7 +90,7 @@ implementation {
 	event message_t* ReceiveData.receive(message_t* bufPtr, void* payload, uint8_t len) {
 		if (len != sizeof(chunk_msg_t)) 
 		{
-			call Leds.led0Toggle();
+			//call Leds.led0Toggle();
 			return bufPtr;
 		}
 		else
@@ -122,7 +122,7 @@ implementation {
 	}
 
 	event void Control.startDone(error_t err) {
-		call Leds.led2On();
+		//call Leds.led2On();
 	}
 	
 	event void Control.stopDone(error_t err) {}
@@ -130,7 +130,7 @@ implementation {
 	// Flash Events
 	event void Flash.writeDone(error_t result){
 		//printf("Write Done TestSerialC");
-		call Leds.led1Toggle();
+		//call Leds.led1Toggle();
 		
 		sendStatusMessage(TRANSFER_OK);
 		

@@ -40,6 +40,10 @@ implementation{
 		}
 	}
 	
+	command error_t RadioReceiverI.stop() {
+		call AMControl.stop();
+		return SUCCESS;
+	}
 
 	event void AMControl.stopDone(error_t err) {}
 	

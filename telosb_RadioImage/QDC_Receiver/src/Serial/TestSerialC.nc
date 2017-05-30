@@ -130,7 +130,7 @@ implementation {
 
 	event void Control.startDone(error_t err) {
 		call Flash.erase(FALSE);
-		call Leds.led2On();
+		//call Leds.led2On();
 	}
 	
 	event void Control.stopDone(error_t err) {}

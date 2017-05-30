@@ -12,8 +12,8 @@ implementation{
 		
 		for(i = 0; i < length/2; i++) {
 			uint8_t firstHalf = source[i*2] & 0xF0; //Removes that last 4 bits. 0xF0 = 0b11110000
-			uint8_t secondHalf = (source[(i*2)+1]) >> 4; //Removes that last 4 bits + bitshifting to rigth
-			destination[i] = firstHalf + secondHalf;
+			uint8_t secondHalf = (((source[(i*2)+1]) >> 4) & 0xF); //Removes that last 4 bits + bitshifting to rigth
+			destination[i] = (firstHalf + secondHalf);
 	    }
 	    
 	    return (uint16_t)length/2;
