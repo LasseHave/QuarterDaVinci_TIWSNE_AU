@@ -1,4 +1,4 @@
-/*									tab:4
+/*
  * "Copyright (c) 2005 The Regents of the University  of California.  
  * All rights reserved.
  *
@@ -23,18 +23,15 @@
  */
 
 /**
- * Java-side application for testing serial port communication.
- * 
- *
- * @author Phil Levis <pal@cs.berkeley.edu>
- * @date August 12 2005
+ * Java-side application for serial communication to a telosB
+ * Original made by the tinyOS project TestSerial
  */
 
 import java.io.IOException;
 
 import java.awt.image.BufferedImage;
-
 import javax.imageio.ImageIO;
+import java.util.Scanner;
 
 import net.tinyos.message.*;
 import net.tinyos.packet.*;
@@ -45,26 +42,22 @@ import java.awt.Graphics;
 
 public class TestSerial implements MessageListener {
 
-	private static final short TRANSFER_TO_TELOS = 1;
-	private static final short TRANSFER_OK = 2;
-	private static final short TRANSFER_FAIL = 3;
-	private static final short TRANSFER_READY = 4;
-	private static final short TRANSFER_FROM_TELOS = 5;
-	private static final short TRANSFER_DONE = 6;
-
+	//"Enum Types"
+	private static final short TRANSFERRING = 1;
+	private static final short OK = 2;
+	private static final short FAIL = 3;
+	private static final short READY = 4;
+	private static final short RECEIVING = 5;
+	private static final short DONE = 6;
 
 	public static MoteIF moteIF;
-
 	public static int currentChunk;
-
-	public static int isReady = 0;
 	public static short[][] data = new short[1024][64];
 
 	public static statusMsg status = new statusMsg();
 	public static chunkMsg payload = new chunkMsg();
 	
 	public static boolean compressionEnabled = false;
-
 
 	public TestSerial(MoteIF moteIF) {
 		this.moteIF = moteIF;
@@ -85,7 +78,7 @@ public class TestSerial implements MessageListener {
 		else if(message.amType() == statusMsg.AM_TYPE)
 		{
 			statusMsg msg = (statusMsg)message;
-			if ((msg.get_status() == TRANSFER_OK) ||(msg.get_status() == TRANSFER_READY))
+			if ((msg.get_status() == OK) ||(msg.get_status() == READY))
 			{
 				if(currentChunk < 1024){
 					printLoading(currentChunk, true); 
@@ -104,7 +97,7 @@ public class TestSerial implements MessageListener {
 				else
 				{
 					currentChunk = 0;
-					status.set_status(TRANSFER_DONE);
+					status.set_status(DONE);
 					try{
 					moteIF.send(0,status);
 					System.out.println("Done sending data");
@@ -114,30 +107,17 @@ public class TestSerial implements MessageListener {
 				}
 
 			}
-			else if (msg.get_status() == TRANSFER_DONE)
+			else if (msg.get_status() == DONE)
 			{
 				// reconstruct image
-				File file = new File("clock.bmp");
-				byte[] recData = new byte[(int) file.length()];
-				int cnt1 = 0;
-				int cnt2 = 0;
-				int cnt3 = 0;
+				int fileSize = 65536;
+				byte[] recData = getDataToRecData(data);
 
-				for (cnt1 = 0; cnt1 < 1024; cnt1++)
-				{
-					for(cnt2 = 0; cnt2 < 64; cnt2++)
-					{
-						recData[cnt3] = (byte)data[cnt1][cnt2];
-						cnt3++;
-					}
-				}
 				try{
-					FileOutputStream out = new FileOutputStream("/home/tinyos/Downloads/reimage.bmp"); //tiff'
-					//Make sure you have write access to the folder
+					FileOutputStream out = new FileOutputStream("/home/tinyos/Downloads/reimage.bmp"); 	//Make sure you have write access to the folder
+
 					try{
-						
-						//out.write(recData);
-						out.write((compressionEnabled ? decompress(recData, file) : recData));
+						out.write((compressionEnabled ? decompress(recData, fileSize) : recData));
 						out.flush();
 						out.close();
 						System.out.println("Image Received!");
@@ -154,20 +134,24 @@ public class TestSerial implements MessageListener {
 			System.out.println("unknown message");
 		}
 	}
-	
-	public static byte[] testDecompress(byte[] recData, File file) {
-		byte[] result = new byte[(int)file.length()];
-		
-		for(int i = 0; i < (int)file.length(); i++) {
-			if(i < 54) {
-				result[i] = (byte)recData[i];
-			} else {
-				result[i] = (byte)(recData[i] & (byte)240);
+
+	public static byte[] getDataToRecData(short[][] data){
+		byte[] toReturn = new byte[65536];
+		int dim1 = 0;
+		int dim2 = 0;
+		int recDataCount = 0;
+
+		for (dim1 = 0; dim1 < 1024; dim1++)
+		{
+			for(dim2 = 0; dim2 < 64; dim2++)
+				{
+					toReturn[recDataCount] = (byte)data[dim1][dim2];
+					recDataCount++;
 			}
 		}
-		return result;
+		return toReturn;
 	}
-
+	
 	public static void printLoading(int currentChunk, boolean sending){
 		System.out.print("\033[H\033[2J");  // clear console
 		System.out.flush();
@@ -192,19 +176,16 @@ public class TestSerial implements MessageListener {
 		System.out.println("[" + toPrint + "] \r");
 	}
 	
-	public static byte[] decompress(byte[] recData, File file) {
-		byte[] result = new byte[(int)file.length()];
+	public static byte[] decompress(byte[] recData, int fileSize) {
+		byte[] result = new byte[fileSize];
 		
-		/*for(int i = 0; i < file.length(); i++) {
-			result[i] = recData[i];
-		}*/
 		byte headerLength = 30;
 		for(int i = 0; i < headerLength; i++) { //bmp header
 			result[i] = recData[i];
 		}
 		
 		int j = headerLength;
-		for(int i = headerLength; i < (int)file.length(); i=(i+2)) { 
+		for(int i = headerLength; i < fileSize; i=(i+2)) { 
 				result[i] = (byte)(recData[j] & 0xF0);
 				result[i+1] = (byte) (recData[j] << 4);
 				j++;
@@ -213,10 +194,29 @@ public class TestSerial implements MessageListener {
 		return result;
 	}
 	
+	public static void getDataFromFile(File file) throws Exception{
+		
+		byte[] fileData = new byte[(int) file.length()];
+		DataInputStream dis = new DataInputStream(new FileInputStream(file));
+		dis.readFully(fileData);
+		int totalChunks =  1024;
+		int dim1 = 0;
+		int dim2 = 0;
+		int fileDataCount = 0;
+
+		for (dim1 = 0; dim1 < totalChunks; dim1++)
+		{
+			for(dim2 = 0; dim2 < 64; dim2++)
+			{
+				data[cnt1][cnt2] = (short)fileData[fileDataCount];
+				fileDataCount++;
+			}
+		}
+	}
+	
 	public static void main(String[] args) throws Exception {
-		String source = null;
-		//RandomAccessFile f = new RandomAccessFile("image.bin", "r");
-		source = args[0]; //"serial@/dev/ttyUSB1:telosb";
+		String source = args[0]; 
+
 		PhoenixSource phoenix;
 		if (source == null) {
 			phoenix = BuildSource.makePhoenix(PrintStreamMessenger.err);
@@ -224,30 +224,11 @@ public class TestSerial implements MessageListener {
 		else {
 			phoenix = BuildSource.makePhoenix(source, PrintStreamMessenger.err);
 		}
-		//statusMsg status = new statusMsg();
-		//chunkMsg payload = new chunkMsg();
+
 		MoteIF mif = new MoteIF(phoenix);
 		TestSerial serial = new TestSerial(mif);
 		currentChunk = 0;
 
-		File file = new File("clock.bmp");
-		byte[] fileData = new byte[(int) file.length()];
-		DataInputStream dis = new DataInputStream(new FileInputStream(file));
-		dis.readFully(fileData);
-		int totalChunks =  1024; // 256 * 256 / 64
-		//short[][] data = new short[totalChunks][64]; 
-		int cnt1 = 0;
-		int cnt2 = 0;
-		int cnt3 = 0;
-
-		for (cnt1 = 0; cnt1 < totalChunks; cnt1++)
-		{
-			for(cnt2 = 0; cnt2 < 64; cnt2++)
-			{
-				data[cnt1][cnt2] = (short)fileData[cnt3];
-				cnt3++;
-			}
-		}
 		
 		if(args.length > 2 && args[2].equals("c")) {
 			compressionEnabled = true;
@@ -256,12 +237,19 @@ public class TestSerial implements MessageListener {
 		if(args.length > 1 && args[1].equals("r"))
     	{
 			System.out.println("Requesting Data");
-			status.set_status(TRANSFER_FROM_TELOS);
+			status.set_status(RECEIVING);
     	}
 		else
 		{
+			System.out.println("Choose a filename you want to transfer: ");
+			Scanner scanInput = new Scanner(System.in);
+	        String input = scanInput.nextLine();
+
+			File file = new File(input + ".bmp"); 
+			getDataFromFile(file);
+			
 			System.out.println("Sending Data");
-			status.set_status(TRANSFER_TO_TELOS);
+			status.set_status(TRANSFERRING);
 		}
 		moteIF.send(0, status);
 	}

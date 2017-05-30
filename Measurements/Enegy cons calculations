@@ -1,0 +1,28 @@
+AA battery: 1,5 V 2,7 Ah
+Datasheet:
+https://d2ei442zrkqy2u.cloudfront.net/wp-content/uploads/2016/03/ID_AA_ID1500.pdf
+https://www.amazon.co.uk/d/lf2/Duracell-AA-Industrial-Alkaline-Battery-Pack-50/B00UTGZJGK
+
+Q = I * t (P/U) * t
+
+t = Q * (U/P)
+
+Q is As
+1 Ah is 3600 As
+
+Units: 
+[Q] = As
+[P] = W
+[U] = V
+[t] = s
+
+Total voltage: 3V (2 * 1.5 V)
+Energy battery: 5400 mAh  (2 * 2700 mAh)
+
+Sender sending
+t = Q * (U/P) = 5400 mAh * (3V/0.53 W)
+  = 19.440.000 As * (3V/0.53W) = 1.100.377 s = 305 Hours
+
+Sender No radio:
+t = Q * (U/P) = 5400 mAh * (3V/0.059 W)
+  = 19.440.000 As * (3V/0.059W) = 988.474.576 s = 274.576 Hours
