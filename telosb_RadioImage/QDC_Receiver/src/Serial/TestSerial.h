@@ -1,15 +1,15 @@
 #ifndef TEST_SERIAL_H
 #define TEST_SERIAL_H
 
-typedef nx_struct chunk_msg {
-  nx_uint16_t chunkNum;
-  nx_uint8_t chunk[64];
-} chunk_msg_t;
+typedef nx_struct DataMsg {
+  nx_uint16_t id;
+  nx_uint8_t data[64];
+} DataMsg;
 
-typedef nx_struct status_msg {
-  nx_uint16_t chunkNum;
+typedef nx_struct StatusMsg {
+  nx_uint16_t id;
   nx_uint8_t status;
-} status_msg_t;
+} StatusMsg;
 
 enum {
   AM_CHUNK_MSG_T = 0x8A,
@@ -17,12 +17,12 @@ enum {
 };
 
 enum {
-	TRANSFER_TO_TELOS = 1,
-	TRANSFER_OK = 2,
-	TRANSFER_FAIL = 3,
-	TRANSFER_READY = 4,
-	TRANSFER_FROM_TELOS = 5,
-	TRANSFER_DONE = 6,
+	RECEIVING = 1,
+	OK = 2,
+	FAILED = 3,
+	READY = 4,
+	SENDING = 5,
+	DONE = 6,
 };
 
 #endif

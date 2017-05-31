@@ -68,8 +68,6 @@ implementation {
 
 	event void Flash.readDone(error_t result){}
 	
-	event void Flash.eraseDoneFromSender(error_t result) {}
-	
 	event void Flash.readLengthDone(error_t result) {}
 
 	event void RadioStartTimer.fired(){

@@ -13,7 +13,6 @@ module TestSerialC {
 	uses interface Receive as ReceiveStatus; 
 	uses interface AMSend as SendStatus;
 	uses interface Packet;
-	uses interface PacketAcknowledgements as PacketAck;
 	uses interface Flash;
 	uses interface Leds;
 }
@@ -29,31 +28,27 @@ implementation {
 	int sendIndex = 0;
 	char sendArray[64];
 	
-	void sendStatusMessage( uint8_t status )
+	void sendMsgWithStatus( uint8_t status )
 	{
-		status_msg_t* statusMsg = (status_msg_t*) call Packet.getPayload(&status_pkt, sizeof(status_msg_t));
+		StatusMsg* statusMsg = (StatusMsg*) call Packet.getPayload(&status_pkt, sizeof(StatusMsg));
 		statusMsg->status = status;
-		statusMsg->chunkNum = sendIndex;
+		statusMsg->id = sendIndex;
 	
-		call PacketAck.noAck(&status_pkt);
-	
-		if (call SendStatus.send(AM_BROADCAST_ADDR, &status_pkt, sizeof(status_msg_t) ) == SUCCESS)
+		if (call SendStatus.send(AM_BROADCAST_ADDR, &status_pkt, sizeof(StatusMsg) ) == SUCCESS)
 		{
 			// Do nothing
 		}
 	
 	}
 	
-	void sendChunkMessage(uint8_t* source )
+	void sendMsgWithData(uint8_t* source )
 	{
-		chunk_msg_t* chunkMsg = (chunk_msg_t*) call Packet.getPayload(&chunk_pkt, sizeof(chunk_msg_t));
+		DataMsg* dataMsg = (DataMsg*) call Packet.getPayload(&chunk_pkt, sizeof(DataMsg));
 	
-		memcpy(chunkMsg->chunk, source, 64);
-		chunkMsg->chunkNum = sendIndex;
+		memcpy(dataMsg->data, source, 64);
+		dataMsg->id = sendIndex;
 	
-		call PacketAck.noAck(&chunk_pkt);
-	
-		if (call SendData.send(AM_BROADCAST_ADDR, &chunk_pkt, sizeof(chunk_msg_t)) == SUCCESS)
+		if (call SendData.send(AM_BROADCAST_ADDR, &chunk_pkt, sizeof(DataMsg)) == SUCCESS)
 		{
 			// Do nothing	
 		}
@@ -61,20 +56,17 @@ implementation {
 	
 	event message_t* ReceiveStatus.receive(message_t* bufPtr, void* payload, uint8_t len) 
 	{
-		if (len != sizeof(status_msg_t)) {
+		if (len != sizeof(StatusMsg)) {
 			return bufPtr;
 		}else{
-			status_msg_t* statusMsg = (status_msg_t*)payload;
+			StatusMsg* statusMsg = (StatusMsg*)payload;
 	
-			if(statusMsg->status == TRANSFER_TO_TELOS)
+			if(statusMsg->status == RECEIVING)
 			{
-				// getting Image from PC
-				// Delete Flash content
 				sendIndex = 0;
 				call Flash.erase();
-			} else if(statusMsg->status == TRANSFER_FROM_TELOS)
+			} else if(statusMsg->status == SENDING)
 			{
-				//Start remote transfer (to PC)
 				sendIndex = 0;
 				call Flash.read(sendArray, sendIndex);	
 			}
@@ -88,19 +80,17 @@ implementation {
 	}
 
 	event message_t* ReceiveData.receive(message_t* bufPtr, void* payload, uint8_t len) {
-		if (len != sizeof(chunk_msg_t)) 
+		if (len != sizeof(DataMsg)) 
 		{
-			//call Leds.led0Toggle();
-			return bufPtr;
+			//do nothing
 		}
 		else
 		{
-			chunk_msg_t* data = (chunk_msg_t*)payload;
-			call Flash.write(data->chunk, data->chunkNum);
+			DataMsg* data = (DataMsg*)payload;
+			call Flash.write(data->data, data->id);
 			sendIndex++;
-	
-			return bufPtr;
 		}
+		return bufPtr;
 	}
 
 	event void SendData.sendDone(message_t* bufPtr, error_t error) {
@@ -108,13 +98,13 @@ implementation {
 		{
 			sendIndex++;
 	
-			if(sendIndex < maxChunks)
+			if(sendIndex == maxChunks)
 			{
-				call Flash.read(sendArray, sendIndex);
+				sendMsgWithStatus(DONE);
 			}
 			else
 			{
-				sendStatusMessage(TRANSFER_DONE);
+				call Flash.read(sendArray, sendIndex);
 			}
 	
 		}
@@ -122,7 +112,7 @@ implementation {
 	}
 
 	event void Control.startDone(error_t err) {
-		//call Leds.led2On();
+		call Leds.led2On();
 	}
 	
 	event void Control.stopDone(error_t err) {}
@@ -132,7 +122,7 @@ implementation {
 		//printf("Write Done TestSerialC");
 		//call Leds.led1Toggle();
 		
-		sendStatusMessage(TRANSFER_OK);
+		sendMsgWithStatus(OK);
 		
 		if(sendIndex == maxChunks) {
 			signal TestSerialI.transferDone();
@@ -142,12 +132,12 @@ implementation {
 	event void Flash.readDone(error_t result)
 	{
 		//printf("Read Done TestSerialC");
-		sendChunkMessage(sendArray);
+		sendMsgWithData(sendArray);
 	}
 
 	event void Flash.eraseDone(error_t result)
 	{
-		sendStatusMessage(TRANSFER_READY);
+		sendMsgWithStatus(READY);
 	}
 	
 	event void Flash.writeLengthDone(error_t result){

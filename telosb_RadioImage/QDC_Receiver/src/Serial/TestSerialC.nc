@@ -13,7 +13,6 @@ module TestSerialC {
 	uses interface Receive as ReceiveStatus; 
 	uses interface AMSend as SendStatus;
 	uses interface Packet;
-	uses interface PacketAcknowledgements as PacketAck;
 	uses interface Flash;
 	uses interface Leds;
 }
@@ -29,132 +28,116 @@ implementation {
 	int sendIndex = 0;
 	char sendArray[64];
 	
-	void sendStatusMessage( uint8_t status )
+	void sendMsgWithStatus( uint8_t status )
 	{
-		status_msg_t* statusMsg = (status_msg_t*) call Packet.getPayload(&status_pkt, sizeof(status_msg_t));
+		StatusMsg* statusMsg = (StatusMsg*) call Packet.getPayload(&status_pkt, sizeof(StatusMsg));
 		statusMsg->status = status;
-		statusMsg->chunkNum = sendIndex;
+		statusMsg->id = sendIndex;
 	
-		call PacketAck.noAck(&status_pkt);
-	
-		if (call SendStatus.send(AM_BROADCAST_ADDR, &status_pkt, sizeof(status_msg_t) ) == SUCCESS)
+		if (call SendStatus.send(AM_BROADCAST_ADDR, &status_pkt, sizeof(StatusMsg) ) == SUCCESS)
 		{
 			// Do nothing
 		}
 	
 	}
 	
-	void sendChunkMessage(uint8_t* source )
+	void sendMsgWithData(uint8_t* source )
 	{
-		chunk_msg_t* chunkMsg = (chunk_msg_t*) call Packet.getPayload(&chunk_pkt, sizeof(chunk_msg_t));
-		memcpy(chunkMsg->chunk, source, 64);
+		DataMsg* dataMsg = (DataMsg*) call Packet.getPayload(&chunk_pkt, sizeof(DataMsg));
 	
-		chunkMsg->chunkNum = sendIndex;
-		call PacketAck.noAck(&chunk_pkt);
+		memcpy(dataMsg->data, source, 64);
+		dataMsg->id = sendIndex;
 	
-		if (call SendData.send(AM_BROADCAST_ADDR, &chunk_pkt, sizeof(chunk_msg_t)) == SUCCESS)
+		if (call SendData.send(AM_BROADCAST_ADDR, &chunk_pkt, sizeof(DataMsg)) == SUCCESS)
 		{
 			// Do nothing	
 		}
 	}
 	
-	event message_t* ReceiveStatus.receive(message_t* bufPtr, 
-			void* payload, uint8_t len) 
+	event message_t* ReceiveStatus.receive(message_t* bufPtr, void* payload, uint8_t len) 
 	{
-		if (len != sizeof(status_msg_t)) 
-		{
+		if (len != sizeof(StatusMsg)) {
 			return bufPtr;
-		}
-		else
-		{
-			status_msg_t* statusMsg = (status_msg_t*)payload;
-			//call Leds.led1Toggle();
-			if(statusMsg->status == TRANSFER_TO_TELOS)
+		}else{
+			StatusMsg* statusMsg = (StatusMsg*)payload;
+	
+			if(statusMsg->status == RECEIVING)
 			{
-				// getting Image from PC
-				// Delete Flash content
 				sendIndex = 0;
-				call Flash.erase(FALSE);
-			}
-			else if(statusMsg->status == TRANSFER_FROM_TELOS)
+				call Flash.erase();
+			} else if(statusMsg->status == SENDING)
 			{
-				//Start remote transfer (to PC)
 				sendIndex = 0;
 				call Flash.read(sendArray, sendIndex);	
 			}
-			else
-			{
-				// nothing
-			}
+	
 			return bufPtr;
 		}
 	}
 
 	event void SendStatus.sendDone(message_t* bufPtr, error_t error) {
-			
+		
 	}
 
 	event message_t* ReceiveData.receive(message_t* bufPtr, void* payload, uint8_t len) {
-		if (len != sizeof(chunk_msg_t)) 
+		if (len != sizeof(DataMsg)) 
 		{
-			call Leds.led0Toggle();
-			return bufPtr;
+			//do nothing
 		}
 		else
 		{
-			chunk_msg_t* data = (chunk_msg_t*)payload;
-			call Flash.write(data->chunk, data->chunkNum);
+			DataMsg* data = (DataMsg*)payload;
+			call Flash.write(data->data, data->id);
 			sendIndex++;
-				
-			return bufPtr;
 		}
+		return bufPtr;
 	}
 
 	event void SendData.sendDone(message_t* bufPtr, error_t error) {
-			if (&chunk_pkt == bufPtr)
+		if (&chunk_pkt == bufPtr)
 		{
 			sendIndex++;
 	
-			if(sendIndex < maxChunks)
+			if(sendIndex == maxChunks)
 			{
-				call Flash.read(sendArray, sendIndex);
+				sendMsgWithStatus(DONE);
 			}
 			else
 			{
-				sendStatusMessage(TRANSFER_DONE);
+				call Flash.read(sendArray, sendIndex);
 			}
-			
+	
 		}
 	
 	}
 
 	event void Control.startDone(error_t err) {
-		call Flash.erase(FALSE);
-		//call Leds.led2On();
+		call Leds.led2On();
 	}
 	
 	event void Control.stopDone(error_t err) {}
 	
 	// Flash Events
-
 	event void Flash.writeDone(error_t result){
 		//printf("Write Done TestSerialC");
-		call Leds.led1Toggle();
-			sendStatusMessage(TRANSFER_OK);
-			if(sendIndex == maxChunks) {
-				signal TestSerialI.transferDone();
-			}
+		//call Leds.led1Toggle();
+		
+		sendMsgWithStatus(OK);
+		
+		if(sendIndex == maxChunks) {
+			signal TestSerialI.transferDone();
+		}
 	}
 
 	event void Flash.readDone(error_t result)
 	{
 		//printf("Read Done TestSerialC");
-		sendChunkMessage(sendArray);
+		sendMsgWithData(sendArray);
 	}
 
 	event void Flash.eraseDone(error_t result)
 	{
-		//do nothing
+		sendMsgWithStatus(READY);
 	}
 	
 	event void Flash.writeLengthDone(error_t result){
@@ -165,11 +148,6 @@ implementation {
 		//do nothing
 	}
 	
-	event void Flash.eraseDoneFromSender(error_t result) {
-		//do nothing
-	}
-	
-
 	command error_t TestSerialI.start(){
 		call Control.start();		
 		return SUCCESS;
