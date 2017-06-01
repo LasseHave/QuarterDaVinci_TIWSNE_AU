@@ -25,18 +25,18 @@ implementation {
 	uint16_t counter = 0;
 	int maxChunks = 1024;
  
-	int sendIndex = 0;
-	char sendArray[64];
+	int transIndex = 0;
+	char transArray[64];
 	
 	void sendMsgWithStatus( uint8_t status )
 	{
 		StatusMsg* statusMsg = (StatusMsg*) call Packet.getPayload(&status_pkt, sizeof(StatusMsg));
 		statusMsg->status = status;
-		statusMsg->id = sendIndex;
+		statusMsg->id = transIndex;
 	
 		if (call SendStatus.send(AM_BROADCAST_ADDR, &status_pkt, sizeof(StatusMsg) ) == SUCCESS)
 		{
-			// Do nothing
+			//do nothing
 		}
 	
 	}
@@ -46,11 +46,11 @@ implementation {
 		DataMsg* dataMsg = (DataMsg*) call Packet.getPayload(&chunk_pkt, sizeof(DataMsg));
 	
 		memcpy(dataMsg->data, source, 64);
-		dataMsg->id = sendIndex;
+		dataMsg->id = transIndex;
 	
 		if (call SendData.send(AM_BROADCAST_ADDR, &chunk_pkt, sizeof(DataMsg)) == SUCCESS)
 		{
-			// Do nothing	
+			//do nothing	
 		}
 	}
 	
@@ -63,12 +63,12 @@ implementation {
 	
 			if(statusMsg->status == RECEIVING)
 			{
-				sendIndex = 0;
+				transIndex = 0;
 				call Flash.erase();
 			} else if(statusMsg->status == SENDING)
 			{
-				sendIndex = 0;
-				call Flash.read(sendArray, sendIndex);	
+				transIndex = 0;
+				call Flash.read(transArray, transIndex);	
 			}
 		}
 		return bufPtr;
@@ -88,7 +88,7 @@ implementation {
 		{
 			DataMsg* data = (DataMsg*)payload;
 			call Flash.write(data->data, data->id);
-			sendIndex++;
+			transIndex++;
 		}
 		return bufPtr;
 	}
@@ -96,19 +96,18 @@ implementation {
 	event void SendData.sendDone(message_t* bufPtr, error_t error) {
 		if (&chunk_pkt == bufPtr)
 		{
-			sendIndex++;
+			transIndex++;
 	
-			if(sendIndex == maxChunks)
+			if(transIndex == maxChunks)
 			{
 				sendMsgWithStatus(DONE);
 			}
 			else
 			{
-				call Flash.read(sendArray, sendIndex);
+				call Flash.read(transArray, transIndex);
 			}
 	
 		}
-	
 	}
 
 	event void Control.startDone(error_t err) {
@@ -119,20 +118,16 @@ implementation {
 	
 	// Flash Events
 	event void Flash.writeDone(error_t result){
-		//printf("Write Done TestSerialC");
-		//call Leds.led1Toggle();
-		
 		sendMsgWithStatus(OK);
 		
-		if(sendIndex == maxChunks) {
+		if(transIndex == maxChunks) {
 			signal TestSerialI.transferDone();
 		}
 	}
 
 	event void Flash.readDone(error_t result)
 	{
-		//printf("Read Done TestSerialC");
-		sendMsgWithData(sendArray);
+		sendMsgWithData(transArray);
 	}
 
 	event void Flash.eraseDone(error_t result)
