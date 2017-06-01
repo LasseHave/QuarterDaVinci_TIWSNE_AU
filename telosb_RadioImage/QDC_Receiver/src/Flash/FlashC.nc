@@ -15,11 +15,9 @@ module FlashC
 implementation
 {		
 	bool withLength = FALSE;
-	bool fromSender = FALSE;
 	
-	command error_t Flash.erase(bool sender)
+	command error_t Flash.erase()
 	{	
-		fromSender = sender;
 		return call BlockWrite.erase();
 	}
 	
@@ -53,12 +51,7 @@ implementation
 	
 	event void BlockWrite.eraseDone(error_t result) 
 	{
-		if(fromSender){
-			fromSender = FALSE;
-			signal Flash.eraseDoneFromSender(result);
-		} else {
-			signal Flash.eraseDone(result);
-		}
+		signal Flash.eraseDone(result);
 	}
 	
 	event void BlockWrite.writeDone(storage_addr_t x, void* buf, storage_len_t y, error_t result) 

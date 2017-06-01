@@ -53,7 +53,6 @@ implementation {
 	TestSerial.SendData -> AM.AMSend[AM_CHUNK_MSG_T];
 	TestSerial.ReceiveStatus -> AM.Receive[AM_STATUS_MSG_T];
 	TestSerial.SendStatus -> AM.AMSend[AM_STATUS_MSG_T];
-	TestSerial.PacketAck -> AM.PacketAcknowledgements;
 	TestSerial.Packet -> AM;
 	TestSerial.Flash -> FlashC;
 	TestSerial.Leds -> LedsC;
