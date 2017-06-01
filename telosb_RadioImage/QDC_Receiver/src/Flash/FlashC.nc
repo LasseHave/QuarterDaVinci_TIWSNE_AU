@@ -23,7 +23,7 @@ implementation
 	
 	command error_t Flash.write(uint8_t* arrPtr, uint32_t pktNum)
 	{
-		error_t Status = call BlockWrite.write(pktNum*BLOCKPART_VOLUME,arrPtr,BLOCKPART_VOLUME);
+		error_t Status = call BlockWrite.write(pktNum*SIZE_BLOCKPART,arrPtr,SIZE_BLOCKPART);
 		return Status;
 	}
 	
@@ -37,7 +37,7 @@ implementation
 	
 	command error_t Flash.read(uint8_t* arrPtr, uint32_t pktNum)
 	{
-		error_t Status = call BlockRead.read(pktNum*BLOCKPART_VOLUME,arrPtr,BLOCKPART_VOLUME);
+		error_t Status = call BlockRead.read(pktNum*SIZE_BLOCKPART,arrPtr,SIZE_BLOCKPART);
 		return Status;
 	}
 	

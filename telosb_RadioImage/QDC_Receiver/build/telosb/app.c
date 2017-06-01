@@ -10581,8 +10581,8 @@ message_t TestSerialC__status_pkt;
 
 int TestSerialC__maxChunks = 1024;
 
-int TestSerialC__sendIndex = 0;
-char TestSerialC__sendArray[64];
+int TestSerialC__transIndex = 0;
+char TestSerialC__transArray[64];
 
 static void TestSerialC__sendMsgWithStatus(uint8_t status);
 #line 44
@@ -10680,7 +10680,7 @@ storage_len_t len);
 #line 103
 static error_t FlashC__BlockWrite__sync(void );
 # 17 "/media/psf/Home/Documents/GIT/TIWSNE_QuarterDaVinci/telosb_RadioImage/QDC_Receiver/src/Flash/FlashC.nc"
-bool FlashC__withLength = 0;
+bool FlashC__withLength = FALSE;
 
 static inline error_t FlashC__Flash__erase(void );
 
@@ -11346,9 +11346,9 @@ enum /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0____nes
 #line 77
 typedef int /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0____nesc_sillytask_timerTask[/*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__timerTask];
 #line 65
-bool /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__stopping = 0;
-bool /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__requested = 0;
-bool /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__stopTimer = 0;
+bool /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__stopping = FALSE;
+bool /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__requested = FALSE;
+bool /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__stopTimer = FALSE;
 
 static inline void /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__startTask__runTask(void );
 
@@ -11482,8 +11482,8 @@ typedef enum Stm25pSpiP____nesc_unnamed4404 {
 
 uint8_t Stm25pSpiP__m_cmd[4];
 
-bool Stm25pSpiP__m_is_writing = 0;
-bool Stm25pSpiP__m_computing_crc = 0;
+bool Stm25pSpiP__m_is_writing = FALSE;
+bool Stm25pSpiP__m_computing_crc = FALSE;
 
 stm25p_addr_t Stm25pSpiP__m_addr;
 uint8_t *Stm25pSpiP__m_buf;
@@ -15878,7 +15878,7 @@ static inline void /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerMana
 #line 69
 {
   /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__TimerMilli__stop();
-  /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__stopTimer = 0;
+  /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__stopTimer = FALSE;
   /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__StdControl__start();
   if (/*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__SplitControl__start() == EALREADY) {
     /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__ResourceDefaultOwner__release();
@@ -16480,7 +16480,7 @@ static inline error_t Stm25pSpiP__Spi__computeCrc(uint16_t crc, stm25p_addr_t ad
 stm25p_len_t len)
 #line 148
 {
-  Stm25pSpiP__m_computing_crc = 1;
+  Stm25pSpiP__m_computing_crc = TRUE;
   Stm25pSpiP__m_crc = crc;
   Stm25pSpiP__m_addr = Stm25pSpiP__m_cur_addr = addr;
   Stm25pSpiP__m_len = Stm25pSpiP__m_cur_len = len;
@@ -17112,7 +17112,7 @@ static inline void TestSerialC__sendMsgWithData(uint8_t *source)
   DataMsg *dataMsg = (DataMsg *)TestSerialC__Packet__getPayload(&TestSerialC__chunk_pkt, sizeof(DataMsg ));
 
   memcpy(dataMsg->data, source, 64);
-  __nesc_hton_uint16(dataMsg->id.data, TestSerialC__sendIndex);
+  __nesc_hton_uint16(dataMsg->id.data, TestSerialC__transIndex);
 
   if (TestSerialC__SendData__send(AM_BROADCAST_ADDR, &TestSerialC__chunk_pkt, sizeof(DataMsg )) == SUCCESS) 
     {
@@ -17123,7 +17123,7 @@ static inline void TestSerialC__sendMsgWithData(uint8_t *source)
 static inline void TestSerialC__Flash__readDone(error_t result)
 {
 
-  TestSerialC__sendMsgWithData(TestSerialC__sendArray);
+  TestSerialC__sendMsgWithData(TestSerialC__transArray);
 }
 
 # 69 "/media/psf/Home/Documents/GIT/TIWSNE_QuarterDaVinci/telosb_RadioImage/QDC_Receiver/src/ReceiverC.nc"
@@ -17463,13 +17463,13 @@ inline static error_t /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerM
 static inline void /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__ResourceDefaultOwner__requested(void )
 #line 81
 {
-  if (/*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__stopping == 0) {
-      /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__stopTimer = 1;
+  if (/*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__stopping == FALSE) {
+      /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__stopTimer = TRUE;
       /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__startTask__postTask();
     }
   else {
 #line 86
-    /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__requested = 1;
+    /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__requested = TRUE;
     }
 }
 
@@ -17675,7 +17675,7 @@ static inline void TestSerialC__Flash__writeDone(error_t result)
 
   TestSerialC__sendMsgWithStatus(OK);
 
-  if (TestSerialC__sendIndex == TestSerialC__maxChunks) {
+  if (TestSerialC__transIndex == TestSerialC__maxChunks) {
       TestSerialC__TestSerialI__transferDone();
     }
 }
@@ -17930,7 +17930,7 @@ inline static void FlashC__Flash__writeLengthDone(error_t res){
 static inline void FlashC__BlockWrite__syncDone(error_t result)
 {
   if (FlashC__withLength) {
-      FlashC__withLength = 0;
+      FlashC__withLength = FALSE;
       FlashC__Flash__writeLengthDone(result);
     }
   else 
@@ -19638,8 +19638,8 @@ static inline void /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerMana
   { __nesc_atomic_t __nesc_atomic = __nesc_atomic_start();
 #line 109
     {
-      if (/*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__stopTimer == 0) {
-          /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__stopping = 1;
+      if (/*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__stopTimer == FALSE) {
+          /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__stopping = TRUE;
           /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__PowerDownCleanup__cleanup();
           /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__StdControl__stop();
           if (/*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__SplitControl__stop() == EALREADY) {
@@ -22804,7 +22804,7 @@ static inline error_t FlashC__Flash__writeLength(uint8_t *arrPtr, uint32_t from,
   error_t Status;
 
 #line 33
-  FlashC__withLength = 1;
+  FlashC__withLength = TRUE;
   Status = FlashC__BlockWrite__write(from, arrPtr, len);
   return Status;
 }
@@ -23915,15 +23915,15 @@ static inline void TestSerialC__SendData__sendDone(message_t *bufPtr, error_t er
 {
   if (&TestSerialC__chunk_pkt == bufPtr) 
     {
-      TestSerialC__sendIndex++;
+      TestSerialC__transIndex++;
 
-      if (TestSerialC__sendIndex == TestSerialC__maxChunks) 
+      if (TestSerialC__transIndex == TestSerialC__maxChunks) 
         {
           TestSerialC__sendMsgWithStatus(DONE);
         }
       else 
         {
-          TestSerialC__Flash__read(TestSerialC__sendArray, TestSerialC__sendIndex);
+          TestSerialC__Flash__read(TestSerialC__transArray, TestSerialC__transIndex);
         }
     }
 }
@@ -24093,15 +24093,15 @@ static inline message_t *TestSerialC__ReceiveStatus__receive(message_t *bufPtr, 
 
       if (__nesc_ntoh_uint8(statusMsg->status.data) == RECEIVING) 
         {
-          TestSerialC__sendIndex = 0;
+          TestSerialC__transIndex = 0;
           TestSerialC__Flash__erase();
         }
       else {
 #line 68
         if (__nesc_ntoh_uint8(statusMsg->status.data) == SENDING) 
           {
-            TestSerialC__sendIndex = 0;
-            TestSerialC__Flash__read(TestSerialC__sendArray, TestSerialC__sendIndex);
+            TestSerialC__transIndex = 0;
+            TestSerialC__Flash__read(TestSerialC__transArray, TestSerialC__transIndex);
           }
         }
     }
@@ -24147,7 +24147,7 @@ static inline message_t *TestSerialC__ReceiveData__receive(message_t *bufPtr, vo
 
 #line 89
       TestSerialC__Flash__write(data->data, __nesc_ntoh_uint16(data->id.data));
-      TestSerialC__sendIndex++;
+      TestSerialC__transIndex++;
     }
   return bufPtr;
 }
@@ -29343,7 +29343,7 @@ stm25p_len_t len)
   Stm25pSpiP__m_addr = addr;
   Stm25pSpiP__m_buf = buf;
   Stm25pSpiP__m_len = len;
-  return Stm25pSpiP__newRequest(0, 4);
+  return Stm25pSpiP__newRequest(FALSE, 4);
 }
 
 #line 176
@@ -29466,7 +29466,7 @@ stm25p_len_t len)
   Stm25pSpiP__m_addr = addr;
   Stm25pSpiP__m_buf = buf;
   Stm25pSpiP__m_len = len;
-  return Stm25pSpiP__newRequest(1, 4);
+  return Stm25pSpiP__newRequest(TRUE, 4);
 }
 
 # 158 "/opt/tinyos-2.1.1/tos/chips/stm25p/Stm25pSectorP.nc"
@@ -29485,7 +29485,7 @@ static error_t Stm25pSpiP__Spi__sectorErase(uint8_t sector)
 {
   Stm25pSpiP__m_cmd[0] = Stm25pSpiP__S_SECTOR_ERASE;
   Stm25pSpiP__m_addr = (stm25p_addr_t )sector << STM25P_SECTOR_SIZE_LOG2;
-  return Stm25pSpiP__newRequest(1, 4);
+  return Stm25pSpiP__newRequest(TRUE, 4);
 }
 
 # 189 "/opt/tinyos-2.1.1/tos/chips/stm25p/Stm25pBlockP.nc"
@@ -29527,7 +29527,7 @@ static void Stm25pBlockP__signalDone(uint8_t id, uint16_t crc, error_t error)
 static __attribute((noinline)) void FlashC__BlockRead__readDone(storage_addr_t x, void *buf, storage_len_t rlen, error_t result)
 {
   if (FlashC__withLength) {
-      FlashC__withLength = 0;
+      FlashC__withLength = FALSE;
       FlashC__Flash__readLengthDone(result);
     }
   else 
@@ -29879,7 +29879,7 @@ static void TestSerialC__sendMsgWithStatus(uint8_t status)
 
 #line 34
   __nesc_hton_uint8(statusMsg->status.data, status);
-  __nesc_hton_uint16(statusMsg->id.data, TestSerialC__sendIndex);
+  __nesc_hton_uint16(statusMsg->id.data, TestSerialC__transIndex);
 
   if (TestSerialC__SendStatus__send(AM_BROADCAST_ADDR, &TestSerialC__status_pkt, sizeof(StatusMsg )) == SUCCESS) 
     {
@@ -29964,15 +29964,15 @@ static void /*HilTimerMilliC.VirtualizeTimerC*/VirtualizeTimerC__0__fireTimers(u
 static void /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__SplitControl__stopDone(error_t error)
 #line 120
 {
-  if (/*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__requested == 1) {
+  if (/*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__requested == TRUE) {
       /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__StdControl__start();
       /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__SplitControl__start();
     }
   { __nesc_atomic_t __nesc_atomic = __nesc_atomic_start();
 #line 125
     {
-      /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__requested = 0;
-      /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__stopping = 0;
+      /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__requested = FALSE;
+      /*Stm25pSectorC.PowerManagerC.PowerManager*/DeferredPowerManagerP__0__stopping = FALSE;
     }
 #line 128
     __nesc_atomic_end(__nesc_atomic); }
@@ -30188,11 +30188,11 @@ static void Stm25pSpiP__releaseAndRequest(void )
 static void Stm25pSpiP__signalDone(error_t error)
 #line 249
 {
-  Stm25pSpiP__m_is_writing = 0;
+  Stm25pSpiP__m_is_writing = FALSE;
   switch (Stm25pSpiP__m_cmd[0]) {
       case Stm25pSpiP__S_READ: 
         if (Stm25pSpiP__m_computing_crc) {
-            Stm25pSpiP__m_computing_crc = 0;
+            Stm25pSpiP__m_computing_crc = FALSE;
             Stm25pSpiP__Spi__computeCrcDone(Stm25pSpiP__m_crc, Stm25pSpiP__m_addr, Stm25pSpiP__m_len, error);
           }
         else {
@@ -30253,7 +30253,7 @@ uint16_t len, error_t error)
 
       case Stm25pSpiP__S_SECTOR_ERASE: case Stm25pSpiP__S_BULK_ERASE: 
           Stm25pSpiP__CSN__set();
-      Stm25pSpiP__m_is_writing = 1;
+      Stm25pSpiP__m_is_writing = TRUE;
       Stm25pSpiP__releaseAndRequest();
       break;
 
