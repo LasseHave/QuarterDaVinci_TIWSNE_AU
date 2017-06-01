@@ -21,31 +21,31 @@ implementation
 		return call BlockWrite.erase();
 	}
 	
-	command error_t Flash.write(uint8_t* uint8Array, uint32_t chunkNum)
+	command error_t Flash.write(uint8_t* arrPtr, uint32_t pktNum)
 	{
-		error_t Status = call BlockWrite.write(chunkNum*BLOCKPART_VOLUME,uint8Array,BLOCKPART_VOLUME);
+		error_t Status = call BlockWrite.write(pktNum*BLOCKPART_VOLUME,arrPtr,BLOCKPART_VOLUME);
 		return Status;
 	}
 	
-	command error_t Flash.writeLength(uint8_t* uint8Array, uint32_t from, uint16_t len)
+	command error_t Flash.writeLength(uint8_t* arrPtr, uint32_t from, uint16_t len)
 	{
 		error_t Status;
 		withLength = TRUE;
-		Status = call BlockWrite.write(from,uint8Array,len);
+		Status = call BlockWrite.write(from,arrPtr,len);
 		return Status;
 	}
 	
-	command error_t Flash.read(uint8_t* uint8Array, uint32_t chunkNum)
+	command error_t Flash.read(uint8_t* arrPtr, uint32_t pktNum)
 	{
-		error_t Status = call BlockRead.read(chunkNum*BLOCKPART_VOLUME,uint8Array,BLOCKPART_VOLUME);
+		error_t Status = call BlockRead.read(pktNum*BLOCKPART_VOLUME,arrPtr,BLOCKPART_VOLUME);
 		return Status;
 	}
 	
-	command error_t Flash.readLength(uint8_t* uint8Array, uint32_t from, uint16_t len)
+	command error_t Flash.readLength(uint8_t* arrPtr, uint32_t from, uint16_t len)
 	{
 		error_t Status;
 		withLength = TRUE;
-		Status = call BlockRead.read(from,uint8Array,len);
+		Status = call BlockRead.read(from,arrPtr,len);
 		return Status;
 	}
 	
@@ -83,5 +83,6 @@ implementation
 
 	event void BlockRead.computeCrcDone(storage_addr_t x, storage_len_t y, uint16_t z, error_t result) 
 	{
+		//Do nothing
   	}
 }

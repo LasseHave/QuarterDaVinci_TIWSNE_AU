@@ -57,7 +57,7 @@ implementation {
 	event message_t* ReceiveStatus.receive(message_t* bufPtr, void* payload, uint8_t len) 
 	{
 		if (len != sizeof(StatusMsg)) {
-			return bufPtr;
+			//TODO: Error message
 		}else{
 			StatusMsg* statusMsg = (StatusMsg*)payload;
 	
@@ -70,9 +70,9 @@ implementation {
 				sendIndex = 0;
 				call Flash.read(sendArray, sendIndex);	
 			}
-	
-			return bufPtr;
 		}
+		return bufPtr;
+
 	}
 
 	event void SendStatus.sendDone(message_t* bufPtr, error_t error) {
@@ -145,10 +145,6 @@ implementation {
 	}
 	
 	event void Flash.readLengthDone(error_t result){
-		//do nothing
-	}
-	
-	event void Flash.eraseDoneFromSender(error_t result) {
 		//do nothing
 	}
 	

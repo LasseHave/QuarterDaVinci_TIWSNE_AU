@@ -125,8 +125,6 @@ implementation {
 	event void Flash.writeDone(error_t result){}
 
 	event void Flash.readDone(error_t result){}
-	
-	event void Flash.eraseDoneFromSender(error_t result) {}
-	
+		
 	event void Flash.writeLengthDone(error_t result) {}
 }
